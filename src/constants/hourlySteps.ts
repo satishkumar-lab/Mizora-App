@@ -1,0 +1,20 @@
+/** Per-hour step counts (6 AM → 10 PM) — mock until Health API */
+export const HOURLY_STEP_SLOTS = [
+  { label: '6 AM', steps: 210 },
+  { label: '7 AM', steps: 380 },
+  { label: '8 AM', steps: 520 },
+  { label: '9 AM', steps: 290 },
+  { label: '10 AM', steps: 410 },
+  { label: '11 AM', steps: 180 },
+  { label: '12 PM', steps: 640 },
+  { label: '1 PM', steps: 320 },
+  { label: '2 PM', steps: 145 },
+  { label: '3 PM', steps: 90 },
+  { label: '4 PM', steps: 260 },
+  { label: '5 PM', steps: 400 },
+  { label: '6 PM', steps: 350 },
+  { label: '7 PM', steps: 120 },
+  { label: '8 PM', steps: 80 },
+  { label: '9 PM', steps: 45 },
+  { label: '10 PM', steps: 5 },
+] as const;
