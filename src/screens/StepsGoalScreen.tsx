@@ -1,7 +1,8 @@
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, Switch, Text, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemedScreen } from '@/components/ui/ThemedScreen';
 
 import { GoalStepper } from '@/components/goals/GoalStepper';
 import { MetricBadgeIcon, type MetricBadgeKind } from '@/components/icons/MetricBadgeIcon';
@@ -18,6 +19,7 @@ import {
   type HealthGoalsState,
   type OptionalGoal,
 } from '@/lib/steps-preferences';
+import { MizoraSwitch } from '@/components/unlock/MizoraSwitch';
 import { fonts } from '@/theme/tokens';
 
 function RequiredChip() {
@@ -28,24 +30,6 @@ function RequiredChip() {
     >
       <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: '#34c759' }}>Required</Text>
     </View>
-  );
-}
-
-function GoalSwitch({
-  value,
-  onValueChange,
-}: {
-  value: boolean;
-  onValueChange: (v: boolean) => void;
-}) {
-  return (
-    <Switch
-      value={value}
-      onValueChange={onValueChange}
-      trackColor={{ false: '#e5ece2', true: '#c8f526' }}
-      thumbColor="#ffffff"
-      ios_backgroundColor="#e5ece2"
-    />
   );
 }
 
@@ -116,7 +100,7 @@ function OptionalGoalRow({
               </Text>
             </View>
           </View>
-          <GoalSwitch value={optional.enabled} onValueChange={onToggle} />
+          <MizoraSwitch value={optional.enabled} onValueChange={onToggle} />
         </View>
 
         {optional.enabled ? (
@@ -279,7 +263,7 @@ export function StepsGoalScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-mizora-bg" edges={['top']}>
+    <ThemedScreen>
       <View className="px-5">
         <ScreenHeader onBack={goBack} title="Daily goals" />
       </View>
@@ -369,6 +353,6 @@ export function StepsGoalScreen() {
           <GradientButton label="Save goals" onPress={() => void onSave()} disabled={saving} />
         </View>
       </View>
-    </SafeAreaView>
+    </ThemedScreen>
   );
 }
