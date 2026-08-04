@@ -1,0 +1,81 @@
+import { useMemo } from 'react';
+import { ScrollView, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+
+import { CalendarOutlineIcon } from '@/components/icons/CalendarOutlineIcon';
+import { StreakAchievementsCard } from '@/components/streak/StreakAchievementsCard';
+import { StreakHeroMainCard } from '@/components/streak/StreakHeroMainCard';
+import { StreakPersonalRecordsCard } from '@/components/streak/StreakPersonalRecordsCard';
+import { StreakWeekProgressCard } from '@/components/streak/StreakWeekProgressCard';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { STREAK_DISPLAY_TODAY } from '@/constants/streakHistory';
+import { STEPS_TODAY } from '@/constants/stepsToday';
+import { useMizoraBack } from '@/hooks/useMizoraBack';
+import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
+import {
+  computeCurrentStreakThroughToday,
+  isStreakDayComplete,
+  stepsForDateKey,
+  STREAK_DAILY_STEP_GOAL,
+} from '@/lib/streakCalendar';
+import { achievementPreview } from '@/constants/achievements';
+import { buildPersonalRecords } from '@/lib/streakStats';
+
+function todayDateKey(): string {
+  const t = STREAK_DISPLAY_TODAY;
+  return `${t.year}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}`;
+}
+
+export function StreakCalendarScreen() {
+  const insets = useSafeAreaInsets();
+  const goBack = useMizoraBack('/home');
+
+  const streakDays = useMemo(() => computeCurrentStreakThroughToday(), []);
+  const todaySteps = useMemo(() => stepsForDateKey(todayDateKey()) || STEPS_TODAY.steps, []);
+  const todayComplete = useMemo(
+    () => isStreakDayComplete(todaySteps, STREAK_DAILY_STEP_GOAL),
+    [todaySteps],
+  );
+  const personalRecords = useMemo(() => buildPersonalRecords(), []);
+  const achievementBadges = useMemo(() => achievementPreview(), []);
+
+  return (
+    <>
+      <StatusBar style="dark" />
+      <SafeAreaView className="flex-1 bg-mizora-bg" edges={['top']}>
+        <View className="px-5">
+          <ScreenHeader
+            onBack={goBack}
+            title="Streak Calendar"
+            rightAccessory={
+              <View className="h-9 w-9 items-center justify-center rounded-full border border-[#ebefea] bg-[#f4f6f3]">
+                <CalendarOutlineIcon size={18} />
+              </View>
+            }
+          />
+        </View>
+        <ScrollView
+          contentContainerClassName="px-5 pb-8"
+          contentContainerStyle={{
+            paddingTop: 8,
+            paddingBottom: insets.bottom + MAIN_TAB_BAR_CLEARANCE,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={{ gap: 16 }}>
+            <StreakHeroMainCard
+              streakDays={streakDays}
+              todaySteps={todaySteps}
+              todayComplete={todayComplete}
+            />
+
+            <StreakAchievementsCard badges={achievementBadges} />
+            <StreakWeekProgressCard streakDays={streakDays} />
+            <StreakPersonalRecordsCard records={personalRecords} />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </>
+  );
+}

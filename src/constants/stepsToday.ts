@@ -11,8 +11,8 @@ export const STEPS_TODAY = {
   hourlyHeights: [9.141, 13.707, 7.309, 20.104, 31.997, 18.281, 10.964, 25.59, 16.45],
   week: [
     { weekday: 'Mon', day: '04', steps: 8200, isToday: false, streak: false },
-    { weekday: 'Tue', day: '05', steps: 9100, isToday: false, streak: true },
-    { weekday: 'Wed', day: '06', steps: 7800, isToday: false, streak: false },
+    { weekday: 'Tue', day: '05', steps: 12500, isToday: false, streak: true },
+    { weekday: 'Wed', day: '06', steps: 4200, isToday: false, streak: false },
     { weekday: 'Thu', day: '07', steps: 3245, isToday: true, streak: false },
     { weekday: 'Fri', day: '08', steps: 0, isToday: false, streak: false },
     { weekday: 'Sat', day: '09', steps: 0, isToday: false, streak: false },

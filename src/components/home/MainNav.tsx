@@ -29,7 +29,11 @@ const TABS: {
 ];
 
 function tabFromPathname(pathname: string): TabId {
-  if (pathname.startsWith('/home') || pathname.startsWith('/steps')) {
+  if (
+    pathname.startsWith('/home') ||
+    pathname.startsWith('/steps') ||
+    pathname.startsWith('/streak')
+  ) {
     return 'home';
   }
   return 'home';
