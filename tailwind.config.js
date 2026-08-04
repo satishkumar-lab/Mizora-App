@@ -2,12 +2,15 @@
 module.exports = {
   content: ['./app/**/*.{js,jsx,ts,tsx}', './src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         mizora: {
           bg: '#fafafa',
+          'bg-dark': '#0f1410',
           card: '#ffffff',
+          'card-dark': '#1c2319',
           primary: '#34c759',
           accent: '#ddfb43',
           'accent-bright': '#c8f526',
@@ -15,6 +18,7 @@ module.exports = {
           limeText: '#1e2c00',
           secondary: '#626b5e',
           shell: '#edeef0',
+          'shell-dark': '#141a14',
           track: '#e5ece2',
           'track-bar': '#e5e5ea',
         },

@@ -10,6 +10,8 @@ import Svg, { Circle, Defs, Line, LinearGradient, Path, Polyline, Stop } from 'r
 
 import { CalendarDayPill, type CalendarDayPillVariant } from '@/components/ui/CalendarDayPill';
 import { STEPS_TODAY } from '@/constants/stepsToday';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+import { chartGridLineStyle } from '@/utils/chartGridStyle';
 import { fonts } from '@/theme/tokens';
 
 const CHART_HEIGHT = 120;
@@ -36,6 +38,8 @@ type WeekStepsSelectorProps = {
 };
 
 export function WeekStepsSelector({ goal: _goal = STEPS_TODAY.goal }: WeekStepsSelectorProps) {
+  const { colors, isDark } = useMizoraTheme();
+  const gridLine = chartGridLineStyle(isDark, colors);
   const week = STEPS_TODAY.week;
   const defaultIndex = Math.max(
     0,
@@ -117,14 +121,14 @@ export function WeekStepsSelector({ goal: _goal = STEPS_TODAY.goal }: WeekStepsS
 
       <View className="flex-row items-end justify-between px-1">
         <View>
-          <Text style={{ fontFamily: fonts.bold, fontSize: 22, color: '#141c12' }}>
+          <Text style={{ fontFamily: fonts.bold, fontSize: 22, color: colors.textStrong }}>
             {selected.steps > 0 ? selected.steps.toLocaleString() : '—'}
           </Text>
-          <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: '#626b5e' }}>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.textSecondary }}>
             steps · {selected.weekday}
           </Text>
         </View>
-        <Text style={{ fontFamily: fonts.regular, fontSize: 11, color: '#8e8e93' }}>
+        <Text style={{ fontFamily: fonts.regular, fontSize: 11, color: colors.textMuted }}>
           Slide chart to compare days
         </Text>
       </View>
@@ -147,15 +151,7 @@ export function WeekStepsSelector({ goal: _goal = STEPS_TODAY.goal }: WeekStepsS
             {[0.33, 0.66].map((t) => {
               const y = PADDING_Y + (CHART_HEIGHT - PADDING_Y * 2) * t;
               return (
-                <Line
-                  key={t}
-                  x1={PADDING_X}
-                  y1={y}
-                  x2={width - PADDING_X}
-                  y2={y}
-                  stroke="#f2f3f0"
-                  strokeWidth={1}
-                />
+                <Line key={t} x1={PADDING_X} y1={y} x2={width - PADDING_X} y2={y} {...gridLine} />
               );
             })}
 
@@ -163,7 +159,7 @@ export function WeekStepsSelector({ goal: _goal = STEPS_TODAY.goal }: WeekStepsS
             <Polyline
               points={linePoints}
               fill="none"
-              stroke="#626b5e"
+              stroke={isDark ? colors.textMuted : '#626b5e'}
               strokeWidth={2.5}
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -180,7 +176,7 @@ export function WeekStepsSelector({ goal: _goal = STEPS_TODAY.goal }: WeekStepsS
                   strokeWidth={2}
                 />
                 <Circle cx={activePoint.x} cy={activePoint.y} r={7} fill="#DDFB43" />
-                <Circle cx={activePoint.x} cy={activePoint.y} r={3.5} fill="#141c12" />
+                <Circle cx={activePoint.x} cy={activePoint.y} r={3.5} fill={colors.textStrong} />
               </>
             ) : null}
           </Svg>

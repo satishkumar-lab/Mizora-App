@@ -5,17 +5,16 @@ type BackChevronIconProps = {
   color?: string;
 };
 
-/** Minimal rounded chevron — no button chrome. */
-/** ~60% gray for back chevron (HSL 0 0% 60%). */
-export const BACK_CHEVRON_COLOR = '#999999';
+/** Secondary text tone — reads lighter than pure gray on white headers. */
+export const BACK_CHEVRON_COLOR = '#626b5e';
 
-export function BackChevronIcon({ size = 24, color = BACK_CHEVRON_COLOR }: BackChevronIconProps) {
+export function BackChevronIcon({ size = 20, color = BACK_CHEVRON_COLOR }: BackChevronIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
-        d="M14.5 5.5L8 12l6.5 6.5"
+        d="M14 7L9 12l5 5"
         stroke={color}
-        strokeWidth={2.25}
+        strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
       />

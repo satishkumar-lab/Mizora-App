@@ -6,9 +6,11 @@ const CROWN_SVG = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" x
 
 type MizoraPlusCrownProps = {
   size?: number;
+  color?: string;
 };
 
 /** Figma export: upgrade-btn / crown (node 8674:15567) */
-export function MizoraPlusCrown({ size = 14 }: MizoraPlusCrownProps) {
-  return <SvgXml xml={CROWN_SVG} width={size} height={size} />;
+export function MizoraPlusCrown({ size = 14, color = '#5C6D05' }: MizoraPlusCrownProps) {
+  const xml = CROWN_SVG.replace('#5C6D05', color);
+  return <SvgXml xml={xml} width={size} height={size} />;
 }

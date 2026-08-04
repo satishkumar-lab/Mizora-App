@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { ScrollView, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemedScreen } from '@/components/ui/ThemedScreen';
 import { StatusBar } from 'expo-status-bar';
 
 import { CalendarOutlineIcon } from '@/components/icons/CalendarOutlineIcon';
+import { CircleIconButton, useCircleIconButtonStyle } from '@/components/ui/CircleIconButton';
 import { StreakAchievementsCard } from '@/components/streak/StreakAchievementsCard';
 import { StreakHeroMainCard } from '@/components/streak/StreakHeroMainCard';
 import { StreakPersonalRecordsCard } from '@/components/streak/StreakPersonalRecordsCard';
@@ -12,6 +14,7 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { STREAK_DISPLAY_TODAY } from '@/constants/streakHistory';
 import { STEPS_TODAY } from '@/constants/stepsToday';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
 import {
   computeCurrentStreakThroughToday,
@@ -27,9 +30,19 @@ function todayDateKey(): string {
   return `${t.year}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}`;
 }
 
+function StreakHeaderCalendarIcon() {
+  const { iconColor } = useCircleIconButtonStyle(36);
+  return (
+    <CircleIconButton size={36} accessibilityRole="none">
+      <CalendarOutlineIcon size={18} color={iconColor} />
+    </CircleIconButton>
+  );
+}
+
 export function StreakCalendarScreen() {
   const insets = useSafeAreaInsets();
   const goBack = useMizoraBack('/home');
+  const { isDark } = useMizoraTheme();
 
   const streakDays = useMemo(() => computeCurrentStreakThroughToday(), []);
   const todaySteps = useMemo(() => stepsForDateKey(todayDateKey()) || STEPS_TODAY.steps, []);
@@ -42,17 +55,13 @@ export function StreakCalendarScreen() {
 
   return (
     <>
-      <StatusBar style="dark" />
-      <SafeAreaView className="flex-1 bg-mizora-bg" edges={['top']}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <ThemedScreen>
         <View className="px-5">
           <ScreenHeader
             onBack={goBack}
             title="Streak Calendar"
-            rightAccessory={
-              <View className="h-9 w-9 items-center justify-center rounded-full border border-[#ebefea] bg-[#f4f6f3]">
-                <CalendarOutlineIcon size={18} />
-              </View>
-            }
+            rightAccessory={<StreakHeaderCalendarIcon />}
           />
         </View>
         <ScrollView
@@ -75,7 +84,7 @@ export function StreakCalendarScreen() {
             <StreakPersonalRecordsCard records={personalRecords} />
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </ThemedScreen>
     </>
   );
 }

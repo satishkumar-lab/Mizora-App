@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/ui/Card';
 import { LiveBadge } from '@/components/ui/LiveBadge';
 import { STREAK_DAILY_STEP_GOAL, streakHeroSubtitle } from '@/lib/streakCalendar';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 type StreakHeroMainCardProps = {
@@ -25,6 +26,7 @@ export function StreakHeroMainCard({
   todaySteps,
   todayComplete,
 }: StreakHeroMainCardProps) {
+  const { colors, isDark } = useMizoraTheme();
   const subtitle = useMemo(
     () => streakHeroSubtitle(streakDays, todayComplete),
     [streakDays, todayComplete],
@@ -133,15 +135,23 @@ export function StreakHeroMainCard({
       </LinearGradient>
 
       <View
-        className="flex-row items-center gap-2.5 border-t border-[#ebefea] px-4 py-3"
-        style={{ backgroundColor: '#ffffff' }}
+        className="flex-row items-center gap-2.5 border-t px-4 py-3"
+        style={{ backgroundColor: colors.card, borderTopColor: colors.border }}
       >
-        <View className="h-8 w-8 items-center justify-center rounded-full bg-[#f8ffd2]">
+        <View
+          className="h-8 w-8 items-center justify-center rounded-full"
+          style={{ backgroundColor: isDark ? '#2a332a' : '#f8ffd2' }}
+        >
           <Ionicons name="footsteps" size={16} color="#5c6d05" />
         </View>
         <Text
           className="min-w-0 flex-1"
-          style={{ fontFamily: fonts.regular, fontSize: 12, color: '#626b5e', lineHeight: 16 }}
+          style={{
+            fontFamily: fonts.regular,
+            fontSize: 12,
+            color: colors.textSecondary,
+            lineHeight: 16,
+          }}
         >
           {todayComplete
             ? 'Goal hit — this day counts toward your streak.'

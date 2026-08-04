@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 type MetricSectionHeaderProps = {
@@ -18,13 +19,19 @@ export function MetricSectionHeader({
   icon = <MetricBadgeIcon kind="steps" size={40} />,
   trailing,
 }: MetricSectionHeaderProps) {
+  const { colors } = useMizoraTheme();
   return (
     <View className="flex-row items-start justify-between gap-3">
       <View className="flex-1 flex-row items-start gap-2.5">
         {icon}
         <View className="flex-1 shrink pt-0.5">
           <Text
-            style={{ fontFamily: fonts.medium, fontSize: 14, color: '#141c12', lineHeight: 18 }}
+            style={{
+              fontFamily: fonts.medium,
+              fontSize: 14,
+              color: colors.textStrong,
+              lineHeight: 18,
+            }}
           >
             {title}
           </Text>
@@ -33,7 +40,7 @@ export function MetricSectionHeader({
               style={{
                 fontFamily: fonts.regular,
                 fontSize: 11,
-                color: '#8e8e93',
+                color: colors.textMuted,
                 lineHeight: 14,
                 marginTop: 1,
               }}

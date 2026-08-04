@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemedScreen } from '@/components/ui/ThemedScreen';
 
 import { AppBrandIcon } from '@/components/icons/AppBrandIcon';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
@@ -11,10 +12,12 @@ import { StepsHourlyChart } from '@/components/steps/StepsHourlyChart';
 import { WeekStepsSelector } from '@/components/steps/WeekStepsSelector';
 import { Card } from '@/components/ui/Card';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { SectionLabel } from '@/components/ui/SectionLabel';
 import { TitleSubtitleBlock } from '@/components/ui/TitleSubtitleBlock';
 import { mizoraCardElevationStyle } from '@/utils/platformStyles';
 import { useDailyStepGoal } from '@/hooks/useDailyStepGoal';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import {
   ACTIVE_STEP_UNLOCK,
   STEPS_TODAY,
@@ -23,10 +26,6 @@ import {
 } from '@/constants/stepsToday';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
 import { fonts } from '@/theme/tokens';
-
-function SectionLabel({ children }: { children: string }) {
-  return <Text style={{ fontFamily: fonts.medium, fontSize: 16, color: '#000' }}>{children}</Text>;
-}
 
 function HeroSummaryCard({
   steps,
@@ -50,6 +49,7 @@ function HeroSummaryCard({
 }
 
 function UnlockNudgeCard() {
+  const { colors, isDark } = useMizoraTheme();
   const unlock = ACTIVE_STEP_UNLOCK;
   const remaining = stepsRemainingForUnlock(unlock);
   const progress = Math.min(unlock.progressSteps / unlock.challengeSteps, 1);
@@ -57,29 +57,35 @@ function UnlockNudgeCard() {
 
   return (
     <View
-      className="overflow-hidden rounded-[20px] border border-[#f2f3f0] bg-white"
+      className="overflow-hidden rounded-[20px] border border-[#f2f3f0] bg-mizora-card dark:border-[#2a332a] dark:bg-mizora-card-dark"
       style={mizoraCardElevationStyle()}
     >
-      <View className="border-b border-[#f2f3f0] bg-[#fafbf4] px-4 py-3">
+      <View
+        className="border-b border-[#f2f3f0] px-4 py-3 dark:border-[#2a332a]"
+        style={{ backgroundColor: isDark ? colors.surfaceMuted : '#fafbf4' }}
+      >
         <View className="flex-row items-center gap-2">
-          <View className="h-8 w-8 items-center justify-center rounded-full bg-white">
-            <Ionicons name="key" size={16} color="#5c6d05" />
-          </View>
-          <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: '#141c12' }}>
+          <MetricBadgeIcon kind="unlock" size={32} />
+          <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.textStrong }}>
             Next unlock
           </Text>
         </View>
       </View>
 
-      <View className="gap-4 bg-white p-4">
+      <View className="gap-4 p-4" style={{ backgroundColor: colors.card }}>
         <View className="flex-row items-center gap-3.5">
           <AppBrandIcon app={unlock.appId} size={48} />
           <View className="flex-1">
-            <Text style={{ fontFamily: fonts.bold, fontSize: 15, color: '#141c12' }}>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 15, color: colors.textStrong }}>
               {unlock.appName}
             </Text>
             <Text
-              style={{ fontFamily: fonts.regular, fontSize: 12, color: '#626b5e', marginTop: 1 }}
+              style={{
+                fontFamily: fonts.regular,
+                fontSize: 12,
+                color: colors.textSecondary,
+                marginTop: 1,
+              }}
             >
               {unlock.unlockMinutes} min access after challenge
             </Text>
@@ -88,21 +94,21 @@ function UnlockNudgeCard() {
             <Text style={{ fontFamily: fonts.bold, fontSize: 20, color: '#34c759' }}>
               {remaining > 0 ? remaining.toLocaleString() : '0'}
             </Text>
-            <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: '#626b5e' }}>
+            <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: colors.textSecondary }}>
               {remaining > 0 ? 'steps left' : 'ready'}
             </Text>
           </View>
         </View>
 
         <View className="gap-2">
-          <View className="h-2.5 overflow-hidden rounded-full bg-mizora-track">
+          <View className="h-2.5 overflow-hidden rounded-full bg-mizora-track dark:bg-[#2a332a]">
             <View
               className="h-full rounded-full bg-mizora-primary"
               style={{ width: `${progress * 100}%` }}
             />
           </View>
           <View className="flex-row items-center justify-between">
-            <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: '#626b5e' }}>
+            <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: colors.textSecondary }}>
               {progressLabel}
             </Text>
             <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: '#49a621' }}>
@@ -116,13 +122,21 @@ function UnlockNudgeCard() {
 }
 
 function StatTile({ value, unit, label }: { value: string; unit: string; label: string }) {
+  const { colors } = useMizoraTheme();
   return (
     <View className="flex-1 items-center px-1">
-      <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: '#626b5e' }}>{label}</Text>
+      <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: colors.textSecondary }}>
+        {label}
+      </Text>
       <Text className="mt-1.5">
-        <Text style={{ fontFamily: fonts.bold, fontSize: 20, color: '#111827' }}>{value}</Text>
+        <Text style={{ fontFamily: fonts.bold, fontSize: 20, color: colors.textStrong }}>
+          {value}
+        </Text>
         {unit ? (
-          <Text style={{ fontFamily: fonts.medium, fontSize: 11, color: '#626b5e' }}> {unit}</Text>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 11, color: colors.textSecondary }}>
+            {' '}
+            {unit}
+          </Text>
         ) : null}
       </Text>
     </View>
@@ -144,6 +158,7 @@ function WeekSection({ goal }: { goal: number }) {
 export function StepsDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useMizoraTheme();
   const { goal, refresh } = useDailyStepGoal();
   const goBack = useMizoraBack('/home');
   const { steps, distanceKm, activeMinutes, vsYesterday, hourlyHeights } = STEPS_TODAY;
@@ -158,13 +173,12 @@ export function StepsDetailScreen() {
   const progressPct = Math.round((steps / goal) * 100);
 
   return (
-    <SafeAreaView className="flex-1 bg-mizora-bg" edges={['top']}>
+    <ThemedScreen>
       <View className="px-5">
         <ScreenHeader
           onBack={goBack}
           title="Today's Steps"
-          subtitle="Live from your phone"
-          titleTrailing={<Ionicons name="footsteps" size={18} color="#34c759" />}
+          rightAccessory={<MetricBadgeIcon kind="steps" size={36} />}
         />
       </View>
       <ScrollView
@@ -193,9 +207,9 @@ export function StepsDetailScreen() {
             <SectionLabel>Today&apos;s activity</SectionLabel>
             <Card className="flex-row items-center py-5">
               <StatTile value={distanceKm.toFixed(1)} unit="km" label="Distance" />
-              <View className="h-12 w-px bg-[#f2f3f0]" />
+              <View className="h-12 w-px" style={{ backgroundColor: colors.borderDivider }} />
               <StatTile value={String(activeMinutes)} unit="min" label="Active time" />
-              <View className="h-12 w-px bg-[#f2f3f0]" />
+              <View className="h-12 w-px" style={{ backgroundColor: colors.borderDivider }} />
               <StatTile value={`+${vsYesterday}`} unit="" label="vs yesterday" />
             </Card>
           </View>
@@ -211,17 +225,24 @@ export function StepsDetailScreen() {
           <Pressable
             accessibilityRole="button"
             onPress={() => router.push('/steps/goal')}
-            className="flex-row items-center justify-between rounded-card border border-[#f2f3f0] bg-white px-4 py-4"
+            className="flex-row items-center justify-between rounded-card border border-[#f2f3f0] bg-mizora-card px-4 py-4 dark:border-[#2a332a] dark:bg-mizora-card-dark"
             style={mizoraCardElevationStyle()}
           >
             <View className="flex-row items-center gap-3">
               <MetricBadgeIcon kind="goal" size={40} />
               <View>
-                <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: '#626b5e' }}>
+                <Text
+                  style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.textSecondary }}
+                >
                   Daily goal
                 </Text>
                 <Text
-                  style={{ fontFamily: fonts.bold, fontSize: 16, color: '#141c12', marginTop: 1 }}
+                  style={{
+                    fontFamily: fonts.medium,
+                    fontSize: 15,
+                    color: colors.textStrong,
+                    marginTop: 1,
+                  }}
                 >
                   {goal.toLocaleString()} steps
                 </Text>
@@ -234,6 +255,6 @@ export function StepsDetailScreen() {
           </Pressable>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ThemedScreen>
   );
 }

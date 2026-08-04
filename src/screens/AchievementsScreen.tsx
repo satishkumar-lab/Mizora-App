@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemedScreen } from '@/components/ui/ThemedScreen';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -10,19 +11,21 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { monthlyAchievementsMeta, resolveMonthlyAchievements } from '@/constants/achievements';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 export function AchievementsScreen() {
   const insets = useSafeAreaInsets();
   const goBack = useMizoraBack('/streak');
+  const { colors, isDark } = useMizoraTheme();
   const meta = useMemo(() => monthlyAchievementsMeta(), []);
   const achievements = useMemo(() => resolveMonthlyAchievements(), []);
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
   return (
     <>
-      <StatusBar style="dark" />
-      <SafeAreaView className="flex-1 bg-mizora-bg" edges={['top']}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <ThemedScreen>
         <View className="px-5">
           <ScreenHeader onBack={goBack} title="Achievements" />
         </View>
@@ -35,25 +38,41 @@ export function AchievementsScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ gap: 16 }}>
-            <Card className="border border-[#ebefea] bg-[#fafbf4] p-4" style={{ gap: 6 }}>
+            <Card
+              className="border p-4"
+              style={{
+                gap: 6,
+                borderColor: colors.border,
+                backgroundColor: isDark ? colors.surfaceMuted : '#fafbf4',
+              }}
+            >
               <View className="flex-row items-center justify-between">
-                <Text style={{ fontFamily: fonts.medium, fontSize: 14, color: '#141c12' }}>
+                <Text style={{ fontFamily: fonts.medium, fontSize: 14, color: colors.textStrong }}>
                   {meta.monthLabel}
                 </Text>
-                <View className="rounded-full bg-[#f8ffd2] px-2.5 py-0.5">
-                  <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: '#5c6d05' }}>
+                <View
+                  className="rounded-full px-2.5 py-0.5"
+                  style={{ backgroundColor: isDark ? '#2a332a' : '#f8ffd2' }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: fonts.medium,
+                      fontSize: 10,
+                      color: colors.textAccentGreen,
+                    }}
+                  >
                     {meta.themeTag}
                   </Text>
                 </View>
               </View>
-              <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: '#141c12' }}>
+              <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.textStrong }}>
                 {unlockedCount} of {achievements.length} unlocked this month
               </Text>
               <Text
                 style={{
                   fontFamily: fonts.regular,
                   fontSize: 12,
-                  color: '#626b5e',
+                  color: colors.textSecondary,
                   lineHeight: 17,
                 }}
               >
@@ -73,12 +92,14 @@ export function AchievementsScreen() {
                   <View className="min-w-0 flex-1" style={{ gap: 4 }}>
                     <View className="flex-row flex-wrap items-center gap-2">
                       <Text
-                        style={{ fontFamily: fonts.medium, fontSize: 15, color: '#141c12' }}
+                        style={{ fontFamily: fonts.medium, fontSize: 15, color: colors.textStrong }}
                         numberOfLines={1}
                       >
                         {item.title}
                       </Text>
-                      <Text style={{ fontFamily: fonts.regular, fontSize: 12, color: '#8e8e93' }}>
+                      <Text
+                        style={{ fontFamily: fonts.regular, fontSize: 12, color: colors.textMuted }}
+                      >
                         · {item.subtitle}
                       </Text>
                     </View>
@@ -86,7 +107,7 @@ export function AchievementsScreen() {
                       style={{
                         fontFamily: fonts.regular,
                         fontSize: 12,
-                        color: '#626b5e',
+                        color: colors.textSecondary,
                         lineHeight: 16,
                       }}
                     >
@@ -97,7 +118,7 @@ export function AchievementsScreen() {
                         style={{
                           fontFamily: fonts.medium,
                           fontSize: 11,
-                          color: '#5c6d05',
+                          color: colors.textAccentGreen,
                           marginTop: 2,
                         }}
                       >
@@ -108,7 +129,7 @@ export function AchievementsScreen() {
                         style={{
                           fontFamily: fonts.medium,
                           fontSize: 11,
-                          color: '#5c6d05',
+                          color: colors.textAccentGreen,
                           marginTop: 2,
                         }}
                       >
@@ -117,12 +138,18 @@ export function AchievementsScreen() {
                     )}
                   </View>
                   {item.unlocked ? (
-                    <View className="h-8 w-8 items-center justify-center rounded-full bg-[#d7ffc7]">
+                    <View
+                      className="h-8 w-8 items-center justify-center rounded-full"
+                      style={{ backgroundColor: isDark ? '#2a332a' : '#d7ffc7' }}
+                    >
                       <Ionicons name="checkmark" size={18} color="#34c759" />
                     </View>
                   ) : (
-                    <View className="h-8 w-8 items-center justify-center rounded-full bg-[#f4f6f3]">
-                      <Ionicons name="lock-closed" size={14} color="#a8b0a4" />
+                    <View
+                      className="h-8 w-8 items-center justify-center rounded-full"
+                      style={{ backgroundColor: colors.surfaceMuted }}
+                    >
+                      <Ionicons name="lock-closed" size={14} color={colors.textMuted} />
                     </View>
                   )}
                 </Card>
@@ -130,7 +157,7 @@ export function AchievementsScreen() {
             </View>
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </ThemedScreen>
     </>
   );
 }

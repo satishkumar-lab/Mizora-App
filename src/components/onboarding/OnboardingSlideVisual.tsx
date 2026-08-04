@@ -4,6 +4,7 @@ import Svg, { Path, type PathProps } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { Card } from '@/components/ui/Card';
+import { LiveBadge } from '@/components/ui/LiveBadge';
 import { fonts } from '@/theme/tokens';
 
 export type OnboardingVisualId = 'welcome' | 'lock' | 'track' | 'profile';
@@ -227,13 +228,7 @@ function TrackVisual() {
       <Card className="gap-3 p-4">
         <View className="flex-row items-center justify-between">
           <Text style={{ fontFamily: fonts.medium, fontSize: 14, color: '#000' }}>Today</Text>
-          <View
-            className="flex-row items-center rounded-full px-2 py-1"
-            style={{ backgroundColor: 'rgba(215,255,199,0.71)' }}
-          >
-            <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: '#34c759' }}>Live</Text>
-            <View className="ml-1 h-2 w-2 rounded-full bg-mizora-primary" />
-          </View>
+          <LiveBadge size="xs" />
         </View>
 
         <View className="flex-row gap-2">

@@ -5,6 +5,8 @@ const KEYS = {
   displayName: '@mizora/display_name',
 } as const;
 
+export const onboardingStorageKeys = KEYS;
+
 export type OnboardingProfile = {
   displayName?: string;
 };
@@ -20,9 +22,11 @@ export async function getDisplayName(): Promise<string | null> {
 
 export async function completeOnboarding(profile: OnboardingProfile = {}): Promise<void> {
   const trimmed = profile.displayName?.trim();
+  const memberSince = new Date().toISOString();
   await AsyncStorage.multiSet([
     [KEYS.complete, 'true'],
     [KEYS.displayName, trimmed && trimmed.length > 0 ? trimmed : ''],
+    ['@mizora/profile/member_since', memberSince],
   ]);
 }
 

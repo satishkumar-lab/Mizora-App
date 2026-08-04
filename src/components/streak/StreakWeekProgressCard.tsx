@@ -9,6 +9,8 @@ import {
   type StreakWeekDayUi,
   type StreakWeekDayUiState,
 } from '@/lib/streakCalendar';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+import { themedHairlineColor } from '@/utils/chartGridStyle';
 import { fonts } from '@/theme/tokens';
 
 const WEEK_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const;
@@ -24,6 +26,7 @@ function WeekDayDot({
   state: StreakWeekDayUiState;
   letter: string;
 }) {
+  const { colors, isDark } = useMizoraTheme();
   const isComplete = state === 'complete';
   const isTodayOpen = state === 'today-open';
   const isMissed = state === 'missed';
@@ -32,14 +35,32 @@ function WeekDayDot({
   const bg = isComplete
     ? '#ddfb43'
     : isTodayOpen
-      ? '#ffffff'
+      ? isDark
+        ? colors.card
+        : '#ffffff'
       : isMissed
-        ? '#fff6f6'
+        ? isDark
+          ? '#2a1818'
+          : '#fff6f6'
         : 'transparent';
   const borderWidth = isTodayOpen ? 2 : isMissed ? 1.5 : isFuture ? 1 : 0;
-  const borderColor = isTodayOpen ? '#ddfb43' : isMissed ? '#f5c2c2' : '#e5ece2';
-  const textColor = isTodayOpen ? '#141c12' : isMissed ? '#c92a2a' : '#8e8e93';
-  const labelColor = isMissed ? '#b54545' : '#8e8e93';
+  const borderColor = isTodayOpen
+    ? '#ddfb43'
+    : isMissed
+      ? isDark
+        ? '#5c3030'
+        : '#f5c2c2'
+      : isDark
+        ? colors.borderDivider
+        : '#e5ece2';
+  const textColor = isTodayOpen
+    ? colors.textStrong
+    : isMissed
+      ? isDark
+        ? '#fca5a5'
+        : '#c92a2a'
+      : colors.textMuted;
+  const labelColor = isMissed ? (isDark ? '#f87171' : '#b54545') : colors.textMuted;
 
   return (
     <View className="flex-1 items-center" style={{ gap: 6 }}>
@@ -79,6 +100,8 @@ type StreakWeekProgressCardProps = {
 
 export function StreakWeekProgressCard({ streakDays }: StreakWeekProgressCardProps) {
   const week = buildStreakWeekDays();
+  const { colors, isDark } = useMizoraTheme();
+  const hairline = themedHairlineColor(isDark, colors);
 
   const subtitle =
     streakDays >= 2
@@ -89,18 +112,20 @@ export function StreakWeekProgressCard({ streakDays }: StreakWeekProgressCardPro
 
   return (
     <Card className="p-4">
-      <Text style={{ fontFamily: fonts.medium, fontSize: 16, color: '#141c12' }}>Streak</Text>
+      <Text style={{ fontFamily: fonts.medium, fontSize: 16, color: colors.textStrong }}>
+        Streak
+      </Text>
       <Text
         style={{
           fontFamily: fonts.regular,
           fontSize: 13,
-          color: '#626b5e',
+          color: colors.textSecondary,
           marginTop: 4,
         }}
       >
         {subtitle}
       </Text>
-      <View className="mt-3 h-px bg-[#ebefea]" />
+      <View className="mt-3 h-px" style={{ backgroundColor: hairline }} />
       <View className="flex-row justify-between px-0.5 pt-4">
         {week.map((day: StreakWeekDayUi, i) => (
           <WeekDayDot

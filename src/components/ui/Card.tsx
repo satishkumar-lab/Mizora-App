@@ -13,7 +13,7 @@ type CardProps = PropsWithChildren<
 export function Card({ children, className = '', style, ...rest }: CardProps) {
   return (
     <View
-      className={`rounded-card bg-mizora-card ${className}`}
+      className={`rounded-card bg-mizora-card dark:bg-mizora-card-dark ${className}`}
       style={[mizoraCardElevationStyle(), style]}
       {...rest}
     >

@@ -1,35 +1,52 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
+import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { MizoraPlusCrown } from '@/components/icons/MizoraPlusCrown';
+import { ThemeToggleButton } from '@/components/ui/ThemeToggleButton';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 export function HomeHeader() {
+  const { colors, isDark } = useMizoraTheme();
+  const router = useRouter();
+
   return (
     <View className="flex-row items-center justify-between">
-      <View>
-        <View className="h-11 w-11 overflow-hidden rounded-full border-[1.5px] border-mizora-primary">
-          <Image
-            source={{ uri: 'https://i.pravatar.cc/200?u=mizora-user' }}
-            className="h-full w-full"
-          />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Open profile and settings"
+        onPress={() => router.push('/profile')}
+        hitSlop={8}
+      >
+        <View>
+          <ProfileAvatar size={44} />
+          <View className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-mizora-bg bg-mizora-primary dark:border-mizora-bg-dark" />
         </View>
-        <View className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-mizora-bg bg-mizora-primary" />
-      </View>
+      </Pressable>
 
       <View className="flex-row items-center gap-2.5">
-        <View className="flex-row items-center gap-1.5 rounded-[10px] bg-mizora-accent-soft px-3 py-2">
-          <MizoraPlusCrown size={14} />
-          <Text className="text-xs" style={{ fontFamily: fonts.medium, color: '#5c6d05' }}>
+        <View
+          className="flex-row items-center gap-1.5 rounded-[10px] bg-mizora-accent-soft px-3 py-2"
+          style={
+            isDark
+              ? {
+                  backgroundColor: colors.iconBadgeBg,
+                  borderWidth: 1,
+                  borderColor: colors.iconBadgeBorder,
+                }
+              : undefined
+          }
+        >
+          <MizoraPlusCrown size={14} color={isDark ? colors.textAccentGreen : undefined} />
+          <Text
+            className="text-xs"
+            style={{ fontFamily: fonts.medium, color: isDark ? colors.textAccentGreen : '#5c6d05' }}
+          >
             Mizora+
           </Text>
         </View>
-        <Pressable className="flex-row items-center gap-1 rounded-[10px] border border-[#ededed] bg-white px-3 py-2">
-          <Text className="text-xs text-black" style={{ fontFamily: fonts.medium }}>
-            Today
-          </Text>
-          <Ionicons name="chevron-down" size={14} color="#000" />
-        </Pressable>
+        <ThemeToggleButton />
       </View>
     </View>
   );

@@ -8,8 +8,10 @@ import {
 } from 'react-native';
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Polyline, Stop } from 'react-native-svg';
 
-import { HOURLY_STEP_SLOTS } from '@/constants/hourlySteps';
+import { HOURLY_STEP_SLOTS, FULL_DAY_AXIS_LABELS } from '@/constants/hourlySteps';
 import { MetricSectionHeader } from '@/components/ui/MetricSectionHeader';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+import { chartGridLineStyle } from '@/utils/chartGridStyle';
 import { fonts } from '@/theme/tokens';
 
 const CHART_HEIGHT = 108;
@@ -28,6 +30,8 @@ function indexFromX(x: number, width: number, count: number): number {
 }
 
 export function StepsHourlyLineChart({ slots = HOURLY_STEP_SLOTS }: StepsHourlyLineChartProps) {
+  const { colors, isDark } = useMizoraTheme();
+  const gridLine = chartGridLineStyle(isDark, colors);
   const [width, setWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(() => {
     let peak = 0;
@@ -96,12 +100,22 @@ export function StepsHourlyLineChart({ slots = HOURLY_STEP_SLOTS }: StepsHourlyL
         trailing={
           <View className="items-end">
             <Text
-              style={{ fontFamily: fonts.bold, fontSize: 17, color: '#141c12', lineHeight: 20 }}
+              style={{
+                fontFamily: fonts.bold,
+                fontSize: 17,
+                color: colors.textStrong,
+                lineHeight: 20,
+              }}
             >
               {active.steps.toLocaleString()}
             </Text>
             <Text
-              style={{ fontFamily: fonts.medium, fontSize: 10, color: '#626b5e', marginTop: 1 }}
+              style={{
+                fontFamily: fonts.medium,
+                fontSize: 10,
+                color: colors.textSecondary,
+                marginTop: 1,
+              }}
             >
               {active.label}
             </Text>
@@ -126,15 +140,7 @@ export function StepsHourlyLineChart({ slots = HOURLY_STEP_SLOTS }: StepsHourlyL
             {[0.25, 0.5, 0.75].map((t) => {
               const y = PADDING_Y + (CHART_HEIGHT - PADDING_Y * 2) * t;
               return (
-                <Line
-                  key={t}
-                  x1={PADDING_X}
-                  y1={y}
-                  x2={width - PADDING_X}
-                  y2={y}
-                  stroke="#f2f3f0"
-                  strokeWidth={1}
-                />
+                <Line key={t} x1={PADDING_X} y1={y} x2={width - PADDING_X} y2={y} {...gridLine} />
               );
             })}
 
@@ -142,7 +148,7 @@ export function StepsHourlyLineChart({ slots = HOURLY_STEP_SLOTS }: StepsHourlyL
             <Polyline
               points={polylinePoints}
               fill="none"
-              stroke="#626b5e"
+              stroke={isDark ? colors.textSecondary : '#626b5e'}
               strokeWidth={2}
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -159,7 +165,7 @@ export function StepsHourlyLineChart({ slots = HOURLY_STEP_SLOTS }: StepsHourlyL
                   strokeWidth={2}
                 />
                 <Circle cx={activePoint.x} cy={activePoint.y} r={6} fill="#DDFB43" />
-                <Circle cx={activePoint.x} cy={activePoint.y} r={3} fill="#141c12" />
+                <Circle cx={activePoint.x} cy={activePoint.y} r={3} fill={colors.textStrong} />
               </>
             ) : null}
           </Svg>
@@ -167,8 +173,11 @@ export function StepsHourlyLineChart({ slots = HOURLY_STEP_SLOTS }: StepsHourlyL
       </View>
 
       <View className="flex-row justify-between px-1">
-        {['6 AM', '12 PM', '6 PM', '10 PM'].map((label) => (
-          <Text key={label} style={{ fontFamily: fonts.regular, fontSize: 9, color: '#8e8e93' }}>
+        {FULL_DAY_AXIS_LABELS.map((label) => (
+          <Text
+            key={label}
+            style={{ fontFamily: fonts.regular, fontSize: 9, color: colors.textMuted }}
+          >
             {label}
           </Text>
         ))}

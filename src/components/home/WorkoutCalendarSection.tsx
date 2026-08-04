@@ -1,10 +1,11 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Text, View } from 'react-native';
 
 import { CalendarOutlineIcon } from '@/components/icons/CalendarOutlineIcon';
+import { FlameOutlineIcon } from '@/components/icons/FlameOutlineIcon';
 import { CalendarDayPill } from '@/components/ui/CalendarDayPill';
 import { Card } from '@/components/ui/Card';
+import { CircleIconButton, useCircleIconButtonStyle } from '@/components/ui/CircleIconButton';
 import {
   buildHomeWeekPills,
   computeCurrentStreakThroughToday,
@@ -12,6 +13,7 @@ import {
   STREAK_DAILY_STEP_GOAL,
 } from '@/lib/streakCalendar';
 import { STEPS_TODAY } from '@/constants/stepsToday';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 function formatStreakCount(days: number): string {
@@ -46,26 +48,25 @@ function streakHeroCopy(streakDays: number): { label: string; headline: string; 
 }
 
 function CalendarNavButton() {
+  const router = useRouter();
+  const { iconColor } = useCircleIconButtonStyle(40);
+
   return (
-    <Link href="/streak" asChild>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Open streak calendar"
-        hitSlop={10}
-        className="h-10 w-10 items-center justify-center rounded-full border border-[#ebefea] bg-[#f4f6f3]"
-        style={({ pressed }) =>
-          pressed ? { opacity: 0.88, transform: [{ scale: 0.97 }] } : { zIndex: 2 }
-        }
-      >
-        <CalendarOutlineIcon size={18} />
-      </Pressable>
-    </Link>
+    <CircleIconButton
+      size={40}
+      onPress={() => router.push('/streak')}
+      accessibilityLabel="Open streak calendar"
+      style={{ zIndex: 2 }}
+    >
+      <CalendarOutlineIcon size={18} color={iconColor} />
+    </CircleIconButton>
   );
 }
 
 function StreakHeroBand({ streakDays }: { streakDays: number }) {
   const { label, headline, detail } = streakHeroCopy(streakDays);
   const showFlame = streakDays >= 2;
+  const { colors } = useMizoraTheme();
 
   return (
     <View className="flex-row items-center" style={{ gap: 14 }}>
@@ -73,7 +74,7 @@ function StreakHeroBand({ streakDays }: { streakDays: number }) {
         style={{
           fontFamily: fonts.medium,
           fontSize: 32,
-          color: '#141c12',
+          color: colors.textStrong,
           lineHeight: 34,
           letterSpacing: -0.5,
           fontVariant: ['tabular-nums'],
@@ -88,7 +89,7 @@ function StreakHeroBand({ streakDays }: { streakDays: number }) {
           style={{
             fontFamily: fonts.medium,
             fontSize: 11,
-            color: '#8e8e93',
+            color: colors.textMuted,
             letterSpacing: 0.3,
             textTransform: 'uppercase',
           }}
@@ -98,15 +99,25 @@ function StreakHeroBand({ streakDays }: { streakDays: number }) {
         <View className="flex-row flex-wrap items-center gap-1">
           <Text
             numberOfLines={1}
-            style={{ fontFamily: fonts.medium, fontSize: 16, color: '#141c12', lineHeight: 19 }}
+            style={{
+              fontFamily: fonts.medium,
+              fontSize: 16,
+              color: colors.textStrong,
+              lineHeight: 19,
+            }}
           >
             {headline}
           </Text>
-          {showFlame ? <Ionicons name="flame" size={15} color="#5c6d05" /> : null}
+          {showFlame ? <FlameOutlineIcon size={15} color={colors.textAccentGreen} /> : null}
         </View>
         <Text
           numberOfLines={2}
-          style={{ fontFamily: fonts.regular, fontSize: 12, color: '#626b5e', lineHeight: 16 }}
+          style={{
+            fontFamily: fonts.regular,
+            fontSize: 12,
+            color: colors.textSecondary,
+            lineHeight: 16,
+          }}
         >
           {detail}
         </Text>
@@ -120,10 +131,13 @@ function StreakHeroBand({ streakDays }: { streakDays: number }) {
 /** “This week” row — keep layout unchanged when editing hero above. */
 function StreakThisWeekSection() {
   const pills = buildHomeWeekPills(STREAK_DAILY_STEP_GOAL);
+  const { colors } = useMizoraTheme();
 
   return (
     <View style={{ gap: 10 }}>
-      <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: '#626b5e' }}>This week</Text>
+      <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.textSecondary }}>
+        This week
+      </Text>
       <View className="flex-row gap-1">
         {pills.map((d) => (
           <View key={`${d.weekday}-${d.day}`} className="flex-1">
@@ -141,7 +155,7 @@ export function WorkoutCalendarSection() {
   return (
     <Card className="gap-0 rounded-[24px] p-4">
       <StreakHeroBand streakDays={streakDays} />
-      <View className="my-4 h-px bg-[#f2f3f0]" />
+      <View className="my-4 h-px bg-[#f2f3f0] dark:bg-[#2a332a]" />
       <StreakThisWeekSection />
     </Card>
   );

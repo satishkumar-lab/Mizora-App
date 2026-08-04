@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Text, View } from 'react-native';
 
 import type { AchievementIconKind, ResolvedAchievement } from '@/constants/achievements';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 export function AchievementBadgeIcon({
@@ -15,7 +16,8 @@ export function AchievementBadgeIcon({
   accent: string;
   size?: number;
 }) {
-  const color = unlocked ? '#5c6d05' : '#a8b0a4';
+  const { colors, isDark } = useMizoraTheme();
+  const color = unlocked ? '#5c6d05' : isDark ? colors.textMuted : '#a8b0a4';
   const name =
     icon === 'steps' || icon === 'walk'
       ? 'footsteps'
@@ -40,9 +42,9 @@ export function AchievementBadgeIcon({
           borderRadius: size / 2,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: unlocked ? accent : '#f4f6f3',
+          backgroundColor: unlocked ? accent : isDark ? colors.surfaceSecondary : '#f4f6f3',
           borderWidth: unlocked ? 2 : 1,
-          borderColor: unlocked ? '#c8f526' : '#ebefea',
+          borderColor: unlocked ? '#c8f526' : isDark ? colors.border : '#ebefea',
         }}
       >
         <Ionicons name={name} size={Math.round(size * 0.42)} color={color} />
@@ -58,7 +60,7 @@ export function AchievementBadgeIcon({
             borderRadius: 999,
             backgroundColor: '#ddfb43',
             borderWidth: 2,
-            borderColor: '#ffffff',
+            borderColor: isDark ? colors.card : '#ffffff',
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -71,6 +73,8 @@ export function AchievementBadgeIcon({
 }
 
 export function AchievementBadgeLabels({ badge }: { badge: ResolvedAchievement }) {
+  const { colors } = useMizoraTheme();
+
   return (
     <View className="items-center" style={{ gap: 2 }}>
       <Text
@@ -78,7 +82,7 @@ export function AchievementBadgeLabels({ badge }: { badge: ResolvedAchievement }
         style={{
           fontFamily: fonts.medium,
           fontSize: 11,
-          color: badge.unlocked ? '#141c12' : '#8e8e93',
+          color: badge.unlocked ? colors.textStrong : colors.textMuted,
           textAlign: 'center',
           lineHeight: 14,
         }}
@@ -91,7 +95,7 @@ export function AchievementBadgeLabels({ badge }: { badge: ResolvedAchievement }
           style={{
             fontFamily: fonts.medium,
             fontSize: 10,
-            color: '#5c6d05',
+            color: colors.textAccentGreen,
             textAlign: 'center',
           }}
         >
@@ -104,7 +108,7 @@ export function AchievementBadgeLabels({ badge }: { badge: ResolvedAchievement }
             style={{
               fontFamily: fonts.regular,
               fontSize: 10,
-              color: '#8e8e93',
+              color: colors.textMuted,
               textAlign: 'center',
               lineHeight: 13,
             }}
@@ -116,7 +120,7 @@ export function AchievementBadgeLabels({ badge }: { badge: ResolvedAchievement }
             style={{
               fontFamily: fonts.medium,
               fontSize: 9,
-              color: '#a8aea8',
+              color: colors.textSecondary,
               textAlign: 'center',
             }}
           >

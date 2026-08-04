@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+
 /** Blocked / unlock app marks — same badge shell pattern as `MetricBadgeIcon`. */
 export type AppBrandId = 'whatsapp' | 'instagram' | 'snapchat' | 'youtube';
 
@@ -44,8 +46,10 @@ type AppBrandIconProps = {
 };
 
 export function AppBrandIcon({ app, size = 40 }: AppBrandIconProps) {
+  const { colors, isDark } = useMizoraTheme();
   const preset = BRANDS[app];
   const glyphSize = badgeGlyphSize(size);
+  const iconColor = isDark && app === 'snapchat' ? '#FFFC00' : preset.iconColor;
 
   return (
     <View
@@ -53,10 +57,12 @@ export function AppBrandIcon({ app, size = 40 }: AppBrandIconProps) {
       style={{
         width: size,
         height: size,
-        backgroundColor: preset.backgroundColor,
+        backgroundColor: isDark ? colors.iconBadgeBg : preset.backgroundColor,
+        borderWidth: isDark ? 1 : 0,
+        borderColor: isDark ? colors.iconBadgeBorder : 'transparent',
       }}
     >
-      <Ionicons name={preset.icon} size={glyphSize} color={preset.iconColor} />
+      <Ionicons name={preset.icon} size={glyphSize} color={iconColor} />
     </View>
   );
 }

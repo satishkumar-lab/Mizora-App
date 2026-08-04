@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useMizoraFonts } from '@/hooks/useMizoraFonts';
+import { MizoraThemeProvider } from '@/providers/MizoraThemeProvider';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -28,9 +29,11 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <View className="flex-1">
-        <Stack screenOptions={{ headerShown: false }} />
-      </View>
+      <MizoraThemeProvider>
+        <View className="flex-1 bg-mizora-bg dark:bg-mizora-bg-dark">
+          <Stack screenOptions={{ headerShown: false }} />
+        </View>
+      </MizoraThemeProvider>
     </SafeAreaProvider>
   );
 }

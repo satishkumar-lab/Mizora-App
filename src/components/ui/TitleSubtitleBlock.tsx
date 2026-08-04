@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native';
 
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 type TitleSubtitleBlockProps = {
@@ -14,15 +15,17 @@ export function TitleSubtitleBlock({
   title,
   subtitle,
   titleSize = 14,
-  titleColor = '#000',
+  titleColor,
 }: TitleSubtitleBlockProps) {
+  const { colors } = useMizoraTheme();
+  const resolvedTitleColor = titleColor ?? colors.textStrong;
   return (
     <View>
       <Text
         style={{
           fontFamily: fonts.medium,
           fontSize: titleSize,
-          color: titleColor,
+          color: resolvedTitleColor,
           lineHeight: titleSize === 16 ? 20 : 18,
         }}
       >
@@ -33,7 +36,7 @@ export function TitleSubtitleBlock({
           style={{
             fontFamily: fonts.regular,
             fontSize: 11,
-            color: '#8e8e93',
+            color: colors.textMuted,
             lineHeight: 14,
             marginTop: 1,
           }}

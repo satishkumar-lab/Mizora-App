@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { Card } from '@/components/ui/Card';
 import type { StreakPersonalRecord } from '@/lib/streakStats';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 type StreakPersonalRecordsCardProps = {
@@ -10,12 +11,13 @@ type StreakPersonalRecordsCardProps = {
 };
 
 function RecordRow({ row, isFirst }: { row: StreakPersonalRecord; isFirst: boolean }) {
+  const { colors } = useMizoraTheme();
   return (
     <View
       className="flex-row items-center justify-between py-3.5"
       style={{
         borderTopWidth: isFirst ? 0 : 1,
-        borderTopColor: '#f2f3f0',
+        borderTopColor: colors.borderDivider,
       }}
     >
       <View className="min-w-0 flex-1 flex-row items-center gap-3">
@@ -25,7 +27,7 @@ function RecordRow({ row, isFirst }: { row: StreakPersonalRecord; isFirst: boole
           style={{
             fontFamily: fonts.regular,
             fontSize: 14,
-            color: '#626b5e',
+            color: colors.textSecondary,
             lineHeight: 19,
             flex: 1,
             paddingRight: 12,
@@ -38,7 +40,7 @@ function RecordRow({ row, isFirst }: { row: StreakPersonalRecord; isFirst: boole
         style={{
           fontFamily: fonts.medium,
           fontSize: 15,
-          color: '#141c12',
+          color: colors.textStrong,
           fontVariant: ['tabular-nums'],
           textAlign: 'right',
           maxWidth: 120,
@@ -51,17 +53,18 @@ function RecordRow({ row, isFirst }: { row: StreakPersonalRecord; isFirst: boole
 }
 
 export function StreakPersonalRecordsCard({ records }: StreakPersonalRecordsCardProps) {
+  const { colors } = useMizoraTheme();
   return (
     <Card className="overflow-hidden p-0">
-      <View className="border-b border-[#f2f3f0] px-4 pb-3 pt-4">
-        <Text style={{ fontFamily: fonts.medium, fontSize: 16, color: '#141c12' }}>
+      <View className="border-b px-4 pb-3 pt-4" style={{ borderBottomColor: colors.borderDivider }}>
+        <Text style={{ fontFamily: fonts.medium, fontSize: 16, color: colors.textStrong }}>
           Personal Records
         </Text>
         <Text
           style={{
             fontFamily: fonts.regular,
             fontSize: 12,
-            color: '#8e8e93',
+            color: colors.textMuted,
             marginTop: 4,
             lineHeight: 16,
           }}
