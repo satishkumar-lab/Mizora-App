@@ -17,7 +17,7 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { TitleSubtitleBlock } from '@/components/ui/TitleSubtitleBlock';
 import { activeCaloriesVsYesterday, todayActiveCaloriesFromSteps } from '@/constants/caloriesToday';
-import { STEPS_TODAY } from '@/constants/stepsToday';
+import { useSteps } from '@/providers/StepsProvider';
 import { useDailyStepGoal, useHealthGoals } from '@/hooks/useDailyStepGoal';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
@@ -37,15 +37,21 @@ export function CaloriesDetailScreen() {
   const { goals, refresh: refreshGoals } = useHealthGoals();
   const { goal: stepGoal, refresh: refreshStepGoal } = useDailyStepGoal();
 
-  const activeKcal = useMemo(() => todayActiveCaloriesFromSteps(), []);
-  const vsYesterday = useMemo(() => activeCaloriesVsYesterday(), []);
+  const { snapshot, todaySteps, refresh: refreshSteps } = useSteps();
+
+  const activeKcal = useMemo(() => todayActiveCaloriesFromSteps(todaySteps), [todaySteps]);
+  const vsYesterday = useMemo(
+    () => activeCaloriesVsYesterday(todaySteps, snapshot.vsYesterday),
+    [todaySteps, snapshot.vsYesterday],
+  );
   const kcalPer1k = kcalPerThousandSteps();
 
   useFocusEffect(
     useCallback(() => {
       void refreshGoals();
       void refreshStepGoal();
-    }, [refreshGoals, refreshStepGoal]),
+      void refreshSteps();
+    }, [refreshGoals, refreshStepGoal, refreshSteps]),
   );
 
   const ringGoal =
@@ -75,7 +81,7 @@ export function CaloriesDetailScreen() {
           <CaloriesDetailHeroCard
             activeKcal={activeKcal}
             goalKcal={ringGoal}
-            stepsToday={STEPS_TODAY.steps}
+            stepsToday={todaySteps}
             vsYesterdayKcal={vsYesterday}
           />
 

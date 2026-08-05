@@ -1,10 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { STREAK_DISPLAY_TODAY } from '@/constants/streakHistory';
-import { todayWaterGoalMl, todayWaterMl } from '@/constants/waterToday';
-import { clampWaterGoalMl } from '@/lib/water-recommendation';
+import { localTodayDateKey } from '@/lib/localDate';
+import { clampWaterGoalMl, WATER_GOAL_MIN_ML } from '@/lib/water-recommendation';
 
-const STORAGE_KEY = '@mizora/water_intake_v1';
+const STORAGE_KEY = '@mizora/water_intake_v2';
 
 export type WaterIntakeSnapshot = {
   dateKey: string;
@@ -12,17 +11,15 @@ export type WaterIntakeSnapshot = {
   goalMl: number;
 };
 
-/** Demo “today” key — swap to real local date when live Health/history ships. */
 export function activeWaterDateKey(): string {
-  const t = STREAK_DISPLAY_TODAY;
-  return `${t.year}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}`;
+  return localTodayDateKey();
 }
 
 export function defaultWaterIntakeSnapshot(): WaterIntakeSnapshot {
   return {
     dateKey: activeWaterDateKey(),
-    loggedMl: todayWaterMl(),
-    goalMl: todayWaterGoalMl(),
+    loggedMl: 0,
+    goalMl: clampWaterGoalMl(WATER_GOAL_MIN_ML),
   };
 }
 

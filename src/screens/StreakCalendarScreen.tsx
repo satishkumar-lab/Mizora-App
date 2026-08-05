@@ -11,8 +11,8 @@ import { StreakHeroMainCard } from '@/components/streak/StreakHeroMainCard';
 import { StreakPersonalRecordsCard } from '@/components/streak/StreakPersonalRecordsCard';
 import { StreakWeekProgressCard } from '@/components/streak/StreakWeekProgressCard';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { STREAK_DISPLAY_TODAY } from '@/constants/streakHistory';
-import { STEPS_TODAY } from '@/constants/stepsToday';
+import { getLocalTodayParts } from '@/constants/streakHistory';
+import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
@@ -26,7 +26,7 @@ import { achievementPreview } from '@/constants/achievements';
 import { buildPersonalRecords } from '@/lib/streakStats';
 
 function todayDateKey(): string {
-  const t = STREAK_DISPLAY_TODAY;
+  const t = getLocalTodayParts();
   return `${t.year}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}`;
 }
 
@@ -44,8 +44,13 @@ export function StreakCalendarScreen() {
   const goBack = useMizoraBack('/home');
   const { isDark } = useMizoraTheme();
 
+  const { todaySteps: liveTodaySteps } = useSteps();
+
   const streakDays = useMemo(() => computeCurrentStreakThroughToday(), []);
-  const todaySteps = useMemo(() => stepsForDateKey(todayDateKey()) || STEPS_TODAY.steps, []);
+  const todaySteps = useMemo(
+    () => Math.max(stepsForDateKey(todayDateKey()), liveTodaySteps),
+    [liveTodaySteps],
+  );
   const todayComplete = useMemo(
     () => isStreakDayComplete(todaySteps, STREAK_DAILY_STEP_GOAL),
     [todaySteps],

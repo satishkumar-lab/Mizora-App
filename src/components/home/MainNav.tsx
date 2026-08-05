@@ -1,21 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { usePathname, useRouter, type Href } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
+import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { metricIoniconName } from '@/components/icons/MetricBadgeIcon';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 
 export type MainNavTabId = 'home' | 'steps' | 'streak' | 'notifications';
 
-/** Primary product surface — opened from the + FAB */
-export const UNLOCK_IMPACT_HREF = '/rewards/impact' as const;
+/** @deprecated Import from `@/constants/productScope` */
+export { UNLOCK_IMPACT_HREF } from '@/constants/productScope';
 
 type MainNavProps = {
   activeTab?: MainNavTabId;
-  onFabPress?: () => void;
 };
 
 type TabConfig = {
@@ -30,9 +29,9 @@ type TabConfig = {
 
 const TAB_SLOT_WIDTH = 65;
 const TAB_BAR_INSET = 8;
+const PROFILE_SLOT = 61;
 /** Icon on lime active pill — always dark for contrast (light + dark theme). */
 const ACTIVE_TAB_ICON_COLOR = '#141c12';
-const FAB_GRADIENT = ['#d6ff92', '#97ec0d'] as const;
 
 function activeTabPillBg(isDark: boolean): string {
   return isDark ? '#c8f526' : '#e4ffb8';
@@ -70,7 +69,7 @@ const TABS: TabConfig[] = [
   },
 ];
 
-/** + FAB primary stack — no tab pill while user is here. */
+/** V2 unlock stack — no tab pill while user is here. */
 function isFabPrimaryRoute(pathname: string): boolean {
   return pathname.startsWith('/rewards');
 }
@@ -91,13 +90,14 @@ function tabIndex(id: MainNavTabId): number {
  * Bottom nav — solid “floating pill” (no blur). Real glassmorphism is inconsistent on Android;
  * iOS blur can be added later behind this surface if needed.
  */
-export function MainNav({ activeTab, onFabPress }: MainNavProps) {
+export function MainNav({ activeTab }: MainNavProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const fabRouteActive = isFabPrimaryRoute(pathname);
+  const unlockRouteActive = isFabPrimaryRoute(pathname);
+  const profileRouteActive = pathname.startsWith('/profile');
   const pathnameTab = tabFromPathname(pathname);
   const resolvedActive: MainNavTabId | null =
-    activeTab !== undefined ? activeTab : fabRouteActive ? null : pathnameTab;
+    activeTab !== undefined ? activeTab : unlockRouteActive ? null : pathnameTab;
   const { colors, isDark } = useMizoraTheme();
 
   const inactiveIconColor = isDark ? colors.textSecondary : colors.textMuted;
@@ -123,6 +123,10 @@ export function MainNav({ activeTab, onFabPress }: MainNavProps) {
     transform: [{ translateX: pillX.value }],
     opacity: pillOpacity.value,
   }));
+
+  const onProfileLongPress = () => {
+    router.push('/profile');
+  };
 
   return (
     <View className="flex-row items-center gap-[15px]">
@@ -187,38 +191,18 @@ export function MainNav({ activeTab, onFabPress }: MainNavProps) {
         })}
       </View>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Unlock impact"
-        accessibilityState={{ selected: fabRouteActive }}
-        onPress={() => {
-          if (onFabPress) {
-            onFabPress();
-            return;
-          }
-          router.navigate(UNLOCK_IMPACT_HREF);
+      <View
+        className="items-center justify-center rounded-full"
+        style={{
+          width: PROFILE_SLOT,
+          height: PROFILE_SLOT,
+          borderWidth: profileRouteActive ? 2 : 1,
+          borderColor: profileRouteActive ? (isDark ? '#c8f526' : '#ddfb43') : colors.navPillBorder,
+          backgroundColor: colors.navPillBg,
         }}
-        style={({ pressed }) =>
-          pressed ? { opacity: 0.92, transform: [{ scale: 0.97 }] } : undefined
-        }
       >
-        <LinearGradient
-          colors={[...FAB_GRADIENT]}
-          style={{
-            width: 61,
-            height: 61,
-            borderRadius: 30.5,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Ionicons
-            name="add"
-            size={29}
-            color={fabRouteActive ? ACTIVE_TAB_ICON_COLOR : '#ffffff'}
-          />
-        </LinearGradient>
-      </Pressable>
+        <ProfileAvatar size={52} editable onLongPress={onProfileLongPress} />
+      </View>
     </View>
   );
 }

@@ -5,6 +5,7 @@ import type { AppBrandId } from '@/components/icons/AppBrandIcon';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { Card } from '@/components/ui/Card';
 import { MOCK_DAILY_SCREEN_MINUTES, type UnlockAppConfig } from '@/constants/unlockRewards';
+import { usePersonalization } from '@/providers/PersonalizationProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
@@ -18,10 +19,10 @@ function formatScreenTimeShort(minutes: number): string {
 type ScreenTimeSuggest = {
   appId: AppBrandId;
   name: string;
-  minutes: number;
+  subtitle: string;
 };
 
-function buildSuggestions(configs: UnlockAppConfig[]): ScreenTimeSuggest[] {
+function buildUsageSuggestions(configs: UnlockAppConfig[]): ScreenTimeSuggest[] {
   return configs
     .filter((c) => c.lockEnabled === false)
     .map((c) => ({
@@ -31,7 +32,12 @@ function buildSuggestions(configs: UnlockAppConfig[]): ScreenTimeSuggest[] {
     }))
     .filter((s) => s.minutes > 0)
     .sort((a, b) => b.minutes - a.minutes)
-    .slice(0, 2);
+    .slice(0, 2)
+    .map((s) => ({
+      appId: s.appId,
+      name: s.name,
+      subtitle: `~${formatScreenTimeShort(s.minutes)}/day on phone`,
+    }));
 }
 
 type ScreenTimeRecommendationsProps = {
@@ -44,7 +50,17 @@ export function ScreenTimeRecommendations({
   onSuggestLock,
 }: ScreenTimeRecommendationsProps) {
   const { colors, isDark } = useMizoraTheme();
-  const suggestions = buildSuggestions(configs);
+  const { lockSuggestions } = usePersonalization();
+
+  const usage = buildUsageSuggestions(configs);
+  const suggestions: ScreenTimeSuggest[] =
+    usage.length > 0
+      ? usage
+      : lockSuggestions.map((s) => ({
+          appId: s.appId,
+          name: s.name,
+          subtitle: s.reason,
+        }));
 
   return (
     <View style={{ gap: 10 }}>
@@ -72,7 +88,7 @@ export function ScreenTimeRecommendations({
       {suggestions.length > 0 ? (
         <View style={{ gap: 8 }}>
           <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.textSecondary }}>
-            Suggested challenges
+            {usage.length > 0 ? 'Suggested from usage' : 'Suggested for you'}
           </Text>
           {suggestions.map((s) => (
             <Card
@@ -86,7 +102,7 @@ export function ScreenTimeRecommendations({
                   {s.name}
                 </Text>
                 <Text style={{ fontFamily: fonts.regular, fontSize: 10, color: colors.textMuted }}>
-                  ~{formatScreenTimeShort(s.minutes)}/day on phone
+                  {s.subtitle}
                 </Text>
               </View>
               <Pressable

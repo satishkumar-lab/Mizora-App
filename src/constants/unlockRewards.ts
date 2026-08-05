@@ -88,10 +88,10 @@ export const UNLOCK_APP_CONFIGS: UnlockAppConfig[] = [
 
 /** Mock daily screen time — replace with OS Screen Time / Usage Stats when permitted. */
 export const MOCK_DAILY_SCREEN_MINUTES: Record<AppBrandId, number> = {
-  instagram: 94,
-  youtube: 67,
-  whatsapp: 41,
-  snapchat: 28,
+  instagram: 0,
+  youtube: 0,
+  whatsapp: 0,
+  snapchat: 0,
 };
 
 export function isAppLockEnabled(config: UnlockAppConfig): boolean {

@@ -9,12 +9,11 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ThemedScreen } from '@/components/ui/ThemedScreen';
 import { Card } from '@/components/ui/Card';
 import { InsightBanner } from '@/components/ui/InsightBanner';
-import { LEGAL } from '@/constants/legal';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
-import { openLegalUrl } from '@/utils/legalLinks';
+import { legalDocumentHref } from '@/utils/legalLinks';
 
 const BULLETS = [
   'Steps, water, streaks, and lock settings stay mainly on your device.',
@@ -74,7 +73,7 @@ export function ProfilePrivacyScreen() {
           <SettingsSection title="Actions">
             <SettingsRow
               label="Full privacy policy"
-              onPress={() => openLegalUrl(LEGAL.privacyPolicyUrl)}
+              onPress={() => router.push(legalDocumentHref('privacy'))}
             />
             <SettingsGroupDivider />
             <SettingsRow

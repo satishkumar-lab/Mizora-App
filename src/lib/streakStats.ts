@@ -1,6 +1,9 @@
 import type { MetricBadgeKind } from '@/components/icons/MetricBadgeIcon';
-import { MOCK_STREAK_STEPS_BY_DATE } from '@/constants/streakHistory';
-import { STEPS_TODAY } from '@/constants/stepsToday';
+import {
+  estimateActiveMinutesFromSteps,
+  estimateDistanceKmFromSteps,
+} from '@/lib/health/stepEstimates';
+import { getStepsHistory, getTodayStepsLive } from '@/lib/steps-live-store';
 import { isStreakDayComplete, STREAK_DAILY_STEP_GOAL, stepsForDateKey } from '@/lib/streakCalendar';
 
 export type StreakPersonalRecord = {
@@ -18,13 +21,12 @@ const MOCK_PERSONAL_RECORDS: Omit<StreakPersonalRecord, 'value'>[] = [
 ];
 
 export function computeMaxStepsInHistory(): number {
-  const fromMock = Object.values(MOCK_STREAK_STEPS_BY_DATE);
-  const fromWeek = STEPS_TODAY.week.map((d) => d.steps);
-  return Math.max(0, ...fromMock, ...fromWeek, STEPS_TODAY.steps);
+  const historyValues = Object.values(getStepsHistory());
+  return Math.max(0, ...historyValues, getTodayStepsLive());
 }
 
 export function computeLongestStreakAllTime(goal: number = STREAK_DAILY_STEP_GOAL): number {
-  const keys = Object.keys(MOCK_STREAK_STEPS_BY_DATE).sort();
+  const keys = Object.keys(getStepsHistory()).sort();
   let best = 0;
   let run = 0;
   let prevMs: number | null = null;
@@ -68,9 +70,9 @@ export function buildPersonalRecords(): StreakPersonalRecord[] {
 
   const values: Record<string, string> = {
     steps: `${maxSteps.toLocaleString()} steps`,
-    time: formatActiveTime(Math.max(STEPS_TODAY.activeMinutes, 200)),
-    distance: `${Math.max(STEPS_TODAY.distanceKm, 28.6).toFixed(1)} km`,
-    calories: `${Math.max(6240, Math.round(maxSteps * 0.04)).toLocaleString()} kcal`,
+    time: formatActiveTime(estimateActiveMinutesFromSteps(getTodayStepsLive())),
+    distance: `${estimateDistanceKmFromSteps(getTodayStepsLive()).toFixed(1)} km`,
+    calories: `${Math.round(maxSteps * 0.04).toLocaleString()} kcal`,
   };
 
   return MOCK_PERSONAL_RECORDS.map((row) => ({

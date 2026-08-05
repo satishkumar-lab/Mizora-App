@@ -145,9 +145,12 @@ export function buildUnlockImpactSummary(
   weekStepGoal: number = MOCK_UNLOCK_WEEK_STEP_GOAL,
   screenTimeWeekGoalMinutes: number = MOCK_WEEK_SCREEN_TIME_GOAL_MIN,
   stepsTodayForLiveSplit?: number,
+  vsLastWeekPct: number = MOCK_VS_LAST_WEEK_PCT,
 ): UnlockImpactSummary {
   const week =
-    stepsTodayForLiveSplit != null && stepsTodayForLiveSplit > 0
+    stepsTodayForLiveSplit != null &&
+    stepsTodayForLiveSplit > 0 &&
+    weekDays.every((d) => !d.isToday || d.unlockSteps === 0)
       ? enrichUnlockWeekWithLiveToday(weekDays, stepsTodayForLiveSplit)
       : weekDays;
   const unlockStepsThisWeek = week.reduce((sum, d) => sum + d.unlockSteps, 0);
@@ -174,7 +177,7 @@ export function buildUnlockImpactSummary(
     stepsPerMinute,
     minutesPer1kSteps,
     screenMinutesSavedPer1kSteps,
-    vsLastWeekPct: MOCK_VS_LAST_WEEK_PCT,
+    vsLastWeekPct,
     weekDays: week,
     screenTimeWeekGoalMinutes,
     screenTimeWeekProgressPct,

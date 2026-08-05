@@ -9,6 +9,7 @@ import { AppUnlockRuleEditor } from '@/components/unlock/AppUnlockRuleEditor';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { openEarnedApp } from '@/lib/openEarnedApp';
 import { useUnlockRewards } from '@/providers/UnlockRewardsProvider';
+import { usePersonalization } from '@/providers/PersonalizationProvider';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
 
@@ -18,8 +19,16 @@ export function RewardAppDetailScreen() {
   const insets = useSafeAreaInsets();
   const goBack = useMizoraBack('/home');
 
-  const { getApp, setChallengeKind, adjustStepGoal, adjustWaterGoal, setUserLockedToday } =
-    useUnlockRewards();
+  const {
+    getApp,
+    setChallengeKind,
+    adjustStepGoal,
+    adjustWaterGoal,
+    setUserLockedToday,
+    setStepGoalSteps,
+    setWaterGoalMl,
+  } = useUnlockRewards();
+  const { prefs, suggestedStepGoal, suggestedWaterGoalMl } = usePersonalization();
   const app = getApp(appId ?? '');
 
   if (!app) {
@@ -63,6 +72,11 @@ export function RewardAppDetailScreen() {
             onSelectWater={() => setChallengeKind(id, 'water')}
             onAdjustSteps={(delta) => adjustStepGoal(id, delta)}
             onAdjustWater={(delta) => adjustWaterGoal(id, delta)}
+            smartGoalsEnabled={prefs.smartUnlockGoalsEnabled}
+            suggestedStepGoal={suggestedStepGoal(id)}
+            suggestedWaterGoalMl={suggestedWaterGoalMl()}
+            onApplySuggestedSteps={() => setStepGoalSteps(id, suggestedStepGoal(id))}
+            onApplySuggestedWater={() => setWaterGoalMl(id, suggestedWaterGoalMl())}
           />
 
           <AppUnlockFocusCard

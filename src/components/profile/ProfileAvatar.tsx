@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { ProfileAvatarPickerSheet } from '@/components/profile/ProfileAvatarPickerSheet';
@@ -18,6 +18,7 @@ type ProfileAvatarProps = {
   size?: number;
   editable?: boolean;
   onPhotoUpdated?: () => void;
+  onLongPress?: () => void;
 };
 
 /** Default — onboarding lime ring + happy face (no avatar chosen yet). */
@@ -55,12 +56,28 @@ function ProfileAvatarPlaceholder({ size }: { size: number }) {
   );
 }
 
-export function ProfileAvatar({ size = 56, editable, onPhotoUpdated }: ProfileAvatarProps) {
+export function ProfileAvatar({
+  size = 56,
+  editable,
+  onPhotoUpdated,
+  onLongPress,
+}: ProfileAvatarProps) {
   const [stored, setStored] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const reload = useCallback(async () => {
     setStored(await getProfileAvatarUri());
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    void Promise.resolve().then(async () => {
+      if (!mounted) return;
+      setStored(await getProfileAvatarUri());
+    });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useFocusEffect(
@@ -100,6 +117,8 @@ export function ProfileAvatar({ size = 56, editable, onPhotoUpdated }: ProfileAv
         accessibilityRole="button"
         accessibilityLabel="Choose avatar"
         onPress={() => setPickerOpen(true)}
+        onLongPress={onLongPress}
+        delayLongPress={380}
         hitSlop={4}
         style={({ pressed }) => (pressed ? { opacity: 0.88 } : undefined)}
       >

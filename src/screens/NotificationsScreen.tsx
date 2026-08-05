@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
-import { UNLOCK_IMPACT_HREF } from '@/components/home/MainNav';
+import { UNLOCK_IMPACT_HREF, UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { NotificationFeedSectionCard } from '@/components/notifications/NotificationFeedSectionCard';
 import { NotificationHeaderIcon } from '@/components/notifications/NotificationHeaderIcon';
 import { WeeklyReportInboxCard } from '@/components/notifications/WeeklyReportInboxCard';
@@ -19,6 +19,7 @@ import {
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+import { fonts } from '@/theme/tokens';
 
 const SECTION_ORDER: NotificationFeedSection[] = ['today', 'yesterday'];
 
@@ -43,7 +44,7 @@ export function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const goBack = useMizoraBack('/home');
-  const { isDark } = useMizoraTheme();
+  const { isDark, colors } = useMizoraTheme();
   const grouped = groupFeedBySection(MOCK_NOTIFICATION_FEED);
 
   const [readIds, setReadIds] = useState(() => initialReadNotificationIds(MOCK_NOTIFICATION_FEED));
@@ -62,7 +63,7 @@ export function NotificationsScreen() {
 
   const unreadTotal = useMemo(() => {
     const feedUnread = MOCK_NOTIFICATION_FEED.filter((n) => n.unread && !readIds.has(n.id)).length;
-    const weeklyUnread = weeklyReportRead ? 0 : 1;
+    const weeklyUnread = UNLOCK_REWARDS_V2_ENABLED && !weeklyReportRead ? 1 : 0;
     return feedUnread + weeklyUnread;
   }, [readIds, weeklyReportRead]);
 
@@ -87,13 +88,32 @@ export function NotificationsScreen() {
           }}
           showsVerticalScrollIndicator={false}
         >
-          <WeeklyReportInboxCard
-            read={weeklyReportRead}
-            onPress={() => {
-              setWeeklyReportRead(true);
-              router.push(UNLOCK_IMPACT_HREF);
-            }}
-          />
+          {UNLOCK_REWARDS_V2_ENABLED ? (
+            <WeeklyReportInboxCard
+              read={weeklyReportRead}
+              onPress={() => {
+                setWeeklyReportRead(true);
+                router.push(UNLOCK_IMPACT_HREF);
+              }}
+            />
+          ) : null}
+
+          {MOCK_NOTIFICATION_FEED.length === 0 ? (
+            <Text
+              style={{
+                fontFamily: fonts.regular,
+                fontSize: 13,
+                color: colors.textMuted,
+                textAlign: 'center',
+                paddingVertical: 24,
+                paddingHorizontal: 12,
+                lineHeight: 20,
+              }}
+            >
+              No notifications yet. Reminders and unlock alerts will show up here when you earn
+              them.
+            </Text>
+          ) : null}
 
           {SECTION_ORDER.map((section) => {
             const rows = grouped[section];

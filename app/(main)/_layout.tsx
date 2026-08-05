@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MainNav } from '@/components/home/MainNav';
 import { UnlockRewardsProvider } from '@/providers/UnlockRewardsProvider';
+import { PersonalizationProvider } from '@/providers/PersonalizationProvider';
+import { StepsProvider } from '@/providers/StepsProvider';
 import { WaterIntakeProvider } from '@/providers/WaterIntakeProvider';
 
 function shouldHideMainNav(pathname: string): boolean {
@@ -17,28 +19,32 @@ export default function MainAppLayout() {
   const hideNav = shouldHideMainNav(pathname);
 
   return (
-    <WaterIntakeProvider>
-      <UnlockRewardsProvider>
-        <View className="flex-1 bg-mizora-bg dark:bg-mizora-bg-dark">
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: 'slide_from_right',
-            }}
-          >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
-          </Stack>
-          {hideNav ? null : (
-            <View
-              pointerEvents="box-none"
-              className="absolute bottom-0 left-0 right-0 items-center"
-              style={{ paddingBottom: Math.max(insets.bottom, 16) }}
-            >
-              <MainNav />
+    <StepsProvider>
+      <WaterIntakeProvider>
+        <UnlockRewardsProvider>
+          <PersonalizationProvider>
+            <View className="flex-1 bg-mizora-bg dark:bg-mizora-bg-dark">
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  animation: 'slide_from_right',
+                }}
+              >
+                <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
+              </Stack>
+              {hideNav ? null : (
+                <View
+                  pointerEvents="box-none"
+                  className="absolute bottom-0 left-0 right-0 items-center"
+                  style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+                >
+                  <MainNav />
+                </View>
+              )}
             </View>
-          )}
-        </View>
-      </UnlockRewardsProvider>
-    </WaterIntakeProvider>
+          </PersonalizationProvider>
+        </UnlockRewardsProvider>
+      </WaterIntakeProvider>
+    </StepsProvider>
   );
 }

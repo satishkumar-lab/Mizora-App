@@ -1,26 +1,24 @@
-import { formatLitersValueFromMl } from '@/lib/water-recommendation';
+import { buildRollingWeekDays } from '@/lib/localDate';
+import { formatLitersValueFromMl, WATER_GOAL_MIN_ML } from '@/lib/water-recommendation';
 
-/** Mock water snapshot — replace with storage / Health API */
+/** Glass size for quick log UI */
 export const ML_PER_GLASS = 250;
 
+function buildWaterWeek() {
+  return buildRollingWeekDays().map((row) => ({
+    ...row,
+    glasses: 0,
+    streak: false as boolean | undefined,
+  }));
+}
+
 export const WATER_TODAY = {
-  glassesLogged: 8,
-  glassGoal: 10,
+  glassesLogged: 0,
+  glassGoal: Math.round(WATER_GOAL_MIN_ML / ML_PER_GLASS),
   mlPerGlass: ML_PER_GLASS,
-  vsYesterdayGlasses: 1,
-  /** Intake by hour (ml) — 6 AM → 11 PM, index 0 = midnight */
-  hourlyMl: [
-    0, 0, 0, 0, 0, 0, 250, 0, 250, 250, 0, 250, 250, 0, 250, 250, 250, 250, 0, 0, 0, 0, 0, 0,
-  ],
-  week: [
-    { weekday: 'Mon', day: '04', glasses: 9, isToday: false },
-    { weekday: 'Tue', day: '05', glasses: 10, isToday: false, streak: true },
-    { weekday: 'Wed', day: '06', glasses: 7, isToday: false },
-    { weekday: 'Thu', day: '07', glasses: 8, isToday: true },
-    { weekday: 'Fri', day: '08', glasses: 0, isToday: false },
-    { weekday: 'Sat', day: '09', glasses: 0, isToday: false },
-    { weekday: 'Sun', day: '10', glasses: 0, isToday: false },
-  ],
+  vsYesterdayGlasses: 0,
+  hourlyMl: Array.from({ length: 24 }, () => 0),
+  week: buildWaterWeek(),
 } as const;
 
 export function waterMlFromGlasses(glasses: number): number {

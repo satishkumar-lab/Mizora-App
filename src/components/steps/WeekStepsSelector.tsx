@@ -9,7 +9,8 @@ import {
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Polyline, Stop } from 'react-native-svg';
 
 import { CalendarDayPill, type CalendarDayPillVariant } from '@/components/ui/CalendarDayPill';
-import { STEPS_TODAY } from '@/constants/stepsToday';
+import type { StepsWeekDay } from '@/constants/stepsToday';
+import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { chartGridLineStyle } from '@/utils/chartGridStyle';
 import { fonts } from '@/theme/tokens';
@@ -18,7 +19,7 @@ const CHART_HEIGHT = 120;
 const PADDING_X = 4;
 const PADDING_Y = 14;
 
-type WeekDay = (typeof STEPS_TODAY.week)[number];
+type WeekDay = StepsWeekDay;
 
 function pillVariant(index: number, selectedIndex: number, day: WeekDay): CalendarDayPillVariant {
   if (index === selectedIndex) return 'active';
@@ -37,10 +38,11 @@ type WeekStepsSelectorProps = {
   goal?: number;
 };
 
-export function WeekStepsSelector({ goal: _goal = STEPS_TODAY.goal }: WeekStepsSelectorProps) {
+export function WeekStepsSelector({ goal: _goal }: WeekStepsSelectorProps) {
+  const { snapshot } = useSteps();
   const { colors, isDark } = useMizoraTheme();
   const gridLine = chartGridLineStyle(isDark, colors);
-  const week = STEPS_TODAY.week;
+  const week = snapshot.week;
   const defaultIndex = Math.max(
     0,
     week.findIndex((d) => d.isToday),

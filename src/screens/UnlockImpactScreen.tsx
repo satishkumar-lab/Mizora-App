@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedScreen } from '@/components/ui/ThemedScreen';
@@ -14,21 +14,45 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useUnlockRewards } from '@/providers/UnlockRewardsProvider';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
-import { STEPS_TODAY } from '@/constants/stepsToday';
+import { useSteps } from '@/providers/StepsProvider';
 import { buildUnlockImpactAppRows, buildUnlockImpactSummary } from '@/lib/unlockImpactStats';
+import { computeVsLastWeekPct, loadUnlockImpactWeekDays } from '@/lib/unlock-impact-storage';
+import type { UnlockImpactWeekDay } from '@/constants/unlockImpactWeek';
+import { MOCK_UNLOCK_IMPACT_WEEK } from '@/constants/unlockImpactWeek';
 
 export function UnlockImpactScreen() {
   const insets = useSafeAreaInsets();
   const goBack = useMizoraBack('/home');
   const router = useRouter();
   const { apps } = useUnlockRewards();
+  const { todaySteps } = useSteps();
+  const [weekDays, setWeekDays] = useState<UnlockImpactWeekDay[]>(MOCK_UNLOCK_IMPACT_WEEK);
+  const [vsLastWeekPct, setVsLastWeekPct] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    loadUnlockImpactWeekDays(apps)
+      .then((days) => {
+        if (!mounted) return;
+        setWeekDays(days);
+        return computeVsLastWeekPct(days);
+      })
+      .then((pct) => {
+        if (mounted && pct != null) setVsLastWeekPct(pct);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [apps]);
+
   const impact = buildUnlockImpactSummary(
     apps,
+    weekDays,
     undefined,
     undefined,
     undefined,
-    undefined,
-    STEPS_TODAY.steps,
+    todaySteps,
+    vsLastWeekPct,
   );
   const appRows = buildUnlockImpactAppRows(apps, impact.weekDays);
   const maxStepsWeek = useMemo(

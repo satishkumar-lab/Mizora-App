@@ -1,4 +1,4 @@
-import { MOCK_STREAK_STEPS_BY_DATE, STREAK_DISPLAY_TODAY } from '@/constants/streakHistory';
+import { MOCK_STREAK_STEPS_BY_DATE, getLocalTodayParts } from '@/constants/streakHistory';
 import {
   buildMonthGrid,
   computeLongestStreakInMonth,
@@ -9,9 +9,9 @@ import {
 
 /** Demo month-scoped lock / unlock / water tallies — wire to persistence later. */
 export const MOCK_MONTHLY_CHALLENGE_PROGRESS = {
-  fullRosterLockDays: 1,
-  challengeUnlocks: 2,
-  waterGoalDays: 3,
+  fullRosterLockDays: 0,
+  challengeUnlocks: 0,
+  waterGoalDays: 0,
 } as const;
 
 export type AchievementMonthContext = {
@@ -20,9 +20,10 @@ export type AchievementMonthContext = {
 };
 
 export function activeAchievementMonth(): AchievementMonthContext {
+  const t = getLocalTodayParts();
   return {
-    year: STREAK_DISPLAY_TODAY.year,
-    month: STREAK_DISPLAY_TODAY.month,
+    year: t.year,
+    month: t.month,
   };
 }
 
@@ -51,11 +52,10 @@ function dateKeysInMonth(ctx: AchievementMonthContext): string[] {
 export function maxStepsInMonth(ctx: AchievementMonthContext = activeAchievementMonth()): number {
   const keys = dateKeysInMonth(ctx);
   const fromMock = keys.map((k) => stepsForDateKey(k));
-  const todayKey = `${achievementMonthKey(ctx)}-${String(STREAK_DISPLAY_TODAY.day).padStart(2, '0')}`;
+  const today = getLocalTodayParts();
+  const todayKey = `${achievementMonthKey(ctx)}-${String(today.day).padStart(2, '0')}`;
   const todaySteps =
-    STREAK_DISPLAY_TODAY.year === ctx.year && STREAK_DISPLAY_TODAY.month === ctx.month
-      ? stepsForDateKey(todayKey)
-      : 0;
+    today.year === ctx.year && today.month === ctx.month ? stepsForDateKey(todayKey) : 0;
   return Math.max(0, ...fromMock, todaySteps);
 }
 

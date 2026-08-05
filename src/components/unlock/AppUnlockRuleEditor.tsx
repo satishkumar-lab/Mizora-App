@@ -28,6 +28,11 @@ type AppUnlockRuleEditorProps = {
   onSelectWater: () => void;
   onAdjustSteps: (delta: number) => void;
   onAdjustWater: (deltaMl: number) => void;
+  suggestedStepGoal?: number;
+  suggestedWaterGoalMl?: number;
+  smartGoalsEnabled?: boolean;
+  onApplySuggestedSteps?: () => void;
+  onApplySuggestedWater?: () => void;
 };
 
 function TypeSegment({
@@ -148,6 +153,11 @@ export function AppUnlockRuleEditor({
   onSelectWater,
   onAdjustSteps,
   onAdjustWater,
+  suggestedStepGoal,
+  suggestedWaterGoalMl,
+  smartGoalsEnabled = false,
+  onApplySuggestedSteps,
+  onApplySuggestedWater,
 }: AppUnlockRuleEditorProps) {
   const { colors, isDark } = useMizoraTheme();
   const challenge = app.challenge;
@@ -220,6 +230,42 @@ export function AppUnlockRuleEditor({
               isSteps ? onAdjustSteps(STEP_UNLOCK_STEP) : onAdjustWater(UNLOCK_WATER_STEP_ML)
             }
           />
+
+          {smartGoalsEnabled &&
+          isSteps &&
+          suggestedStepGoal != null &&
+          suggestedStepGoal !== challenge.goalSteps &&
+          onApplySuggestedSteps ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={onApplySuggestedSteps}
+              className="flex-row items-center justify-center gap-1.5 self-center rounded-full px-3 py-2"
+              style={{ backgroundColor: isDark ? colors.surfaceSecondary : '#f4f6f3' }}
+            >
+              <Ionicons name="sparkles" size={12} color="#5c6d05" />
+              <Text style={{ fontFamily: fonts.medium, fontSize: 11, color: colors.textStrong }}>
+                Use suggested {formatStepShort(suggestedStepGoal)} steps
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {smartGoalsEnabled &&
+          !isSteps &&
+          suggestedWaterGoalMl != null &&
+          suggestedWaterGoalMl !== challenge.goalMl &&
+          onApplySuggestedWater ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={onApplySuggestedWater}
+              className="flex-row items-center justify-center gap-1.5 self-center rounded-full px-3 py-2"
+              style={{ backgroundColor: isDark ? colors.surfaceSecondary : '#f4f6f3' }}
+            >
+              <Ionicons name="sparkles" size={12} color="#5c6d05" />
+              <Text style={{ fontFamily: fonts.medium, fontSize: 11, color: colors.textStrong }}>
+                Use suggested {formatLitersValueFromMl(suggestedWaterGoalMl)} L
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       </Card>
     </View>

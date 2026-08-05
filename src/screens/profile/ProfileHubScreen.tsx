@@ -12,8 +12,8 @@ import { SettingsGroupDivider } from '@/components/settings/SettingsGroupDivider
 import { SettingsRow, SettingsSection } from '@/components/settings/SettingsRow';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ThemedScreen } from '@/components/ui/ThemedScreen';
-import { LEGAL } from '@/constants/legal';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
+import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import {
@@ -25,7 +25,7 @@ import {
 } from '@/lib/profile-storage';
 import { saveMizoraTheme, type MizoraThemeScheme } from '@/lib/theme-storage';
 import { fonts } from '@/theme/tokens';
-import { openLegalUrl, openSupportEmail } from '@/utils/legalLinks';
+import { legalDocumentHref } from '@/utils/legalLinks';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -105,15 +105,20 @@ export function ProfileHubScreen() {
               label="Daily step goal"
               leading={<MetricBadgeIcon kind="steps" size={40} />}
               onPress={() => router.push('/steps/goal')}
+              isLast={!UNLOCK_REWARDS_V2_ENABLED}
             />
-            <SettingsGroupDivider />
-            <SettingsRow
-              label="Lock Challenge"
-              subtitle="Apps, targets, and unlock rules"
-              leading={<MetricBadgeIcon kind="unlock" size={40} />}
-              onPress={() => router.push('/rewards')}
-              isLast
-            />
+            {UNLOCK_REWARDS_V2_ENABLED ? (
+              <>
+                <SettingsGroupDivider />
+                <SettingsRow
+                  label="Lock Challenge"
+                  subtitle="Apps, targets, and unlock rules"
+                  leading={<MetricBadgeIcon kind="unlock" size={40} />}
+                  onPress={() => router.push('/rewards')}
+                  isLast
+                />
+              </>
+            ) : null}
           </SettingsSection>
 
           <SettingsSection title="Preferences">
@@ -121,6 +126,13 @@ export function ProfileHubScreen() {
               label="Notifications"
               leading={<MetricBadgeIcon kind="activeTime" size={40} appearance="read" />}
               onPress={() => router.push('/profile/notifications')}
+            />
+            <SettingsGroupDivider />
+            <SettingsRow
+              label="Personalization"
+              subtitle="Insights and smart unlock suggestions"
+              leading={<MetricBadgeIcon kind="steps" size={40} />}
+              onPress={() => router.push('/profile/personalization')}
             />
             <SettingsGroupDivider />
             <SettingsRow
@@ -162,17 +174,26 @@ export function ProfileHubScreen() {
           <SettingsSection title="Legal & support">
             <SettingsRow
               label="Privacy Policy"
-              onPress={() => openLegalUrl(LEGAL.privacyPolicyUrl)}
+              onPress={() => router.push(legalDocumentHref('privacy'))}
             />
             <SettingsGroupDivider />
             <SettingsRow
               label="Terms of Service"
-              onPress={() => openLegalUrl(LEGAL.termsOfServiceUrl)}
+              onPress={() => router.push(legalDocumentHref('terms'))}
             />
             <SettingsGroupDivider />
-            <SettingsRow label="Help & about" onPress={() => router.push('/profile/about')} />
+            <SettingsRow
+              label="Help & support"
+              subtitle="FAQ and contact"
+              onPress={() => router.push('/profile/help')}
+            />
             <SettingsGroupDivider />
-            <SettingsRow label="Contact support" onPress={() => openSupportEmail()} isLast />
+            <SettingsRow
+              label="About"
+              subtitle="Mission, team, and version"
+              onPress={() => router.push('/profile/about')}
+              isLast
+            />
           </SettingsSection>
 
           <Text

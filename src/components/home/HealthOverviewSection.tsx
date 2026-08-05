@@ -8,6 +8,8 @@ import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { StepsProgressCard } from '@/components/home/StepsProgressCard';
 import { todayActiveCaloriesFromSteps } from '@/constants/caloriesToday';
 import { useHomeDashboardPreferences } from '@/providers/HomeDashboardPreferencesProvider';
+import { estimateFloorsFromSteps } from '@/lib/health/stepEstimates';
+import { useSteps } from '@/providers/StepsProvider';
 import { useWaterIntake } from '@/providers/WaterIntakeProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
@@ -77,16 +79,23 @@ function MetricSideCard({
 
 function StatsRow() {
   const { colors, isDark } = useMizoraTheme();
+  const { snapshot, todaySteps } = useSteps();
+  const distanceKm = snapshot.distanceKm;
+  const activeMinutes = snapshot.activeMinutes;
+  const floors = estimateFloorsFromSteps(todaySteps);
+
+  const items = [
+    { value: distanceKm.toFixed(1), unit: 'km', label: 'Distance' },
+    { value: String(activeMinutes), unit: 'min', label: 'Active Time' },
+    { value: String(floors), unit: '', label: 'Floors' },
+  ] as const;
+
   return (
     <Card
       className="flex-row items-center justify-center gap-5 px-5 py-4"
       style={{ borderWidth: 0.67, borderColor: isDark ? colors.border : '#e0f0ff' }}
     >
-      {[
-        { value: '2.5', unit: 'km', label: 'Distance' },
-        { value: '28', unit: 'min', label: 'Active Time' },
-        { value: '02', unit: '', label: 'Floor' },
-      ].map((item, index) => (
+      {items.map((item, index) => (
         <View key={item.label} className="flex-1 flex-row items-center">
           {index > 0 ? (
             <View className="mr-5 h-10 w-px" style={{ backgroundColor: colors.borderDivider }} />
@@ -126,8 +135,9 @@ export function HealthOverviewSection() {
   const router = useRouter();
   const { colors } = useMizoraTheme();
   const { prefs } = useHomeDashboardPreferences();
+  const { todaySteps } = useSteps();
   const isSplit = prefs.healthOverviewLayout === 'split';
-  const activeKcal = todayActiveCaloriesFromSteps();
+  const activeKcal = todayActiveCaloriesFromSteps(todaySteps);
   const { homeDisplay: waterHome } = useWaterIntake();
   const [stepsColumnHeight, setStepsColumnHeight] = useState<number | null>(null);
 

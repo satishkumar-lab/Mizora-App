@@ -1,11 +1,13 @@
 import type { CalendarDayPillModel, CalendarDayPillVariant } from '@/components/ui/CalendarDayPill';
-import { MOCK_STREAK_STEPS_BY_DATE, STREAK_DISPLAY_TODAY } from '@/constants/streakHistory';
-import { STEPS_TODAY } from '@/constants/stepsToday';
+import { MOCK_STREAK_STEPS_BY_DATE } from '@/constants/streakHistory';
+import type { StepsWeekDay } from '@/constants/stepsToday';
+import { getLocalTodayParts, type LocalDateParts } from '@/lib/localDate';
+import { getStepsHistory, getTodayStepsLive } from '@/lib/steps-live-store';
 
 /** Steps to mark a day complete for streak (wire to user daily goal later). */
 export const STREAK_DAILY_STEP_GOAL = 7_000;
 
-export type StreakWeekDay = (typeof STEPS_TODAY.week)[number];
+export type StreakWeekDay = StepsWeekDay;
 
 export type StreakMonthDay = {
   dateKey: string;
@@ -21,7 +23,7 @@ export type StreakMonthWeek = StreakMonthDay[];
 
 const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
-export { STREAK_DISPLAY_TODAY };
+export { getLocalTodayParts };
 
 function mondayFirstColumnIndex(date: Date): number {
   return (date.getDay() + 6) % 7;
@@ -55,7 +57,7 @@ export function isNextCalendarDay(dateKeyA: string, dateKeyB: string): boolean {
 
 /** Active streak days + today (for connector through current day). */
 export function buildStreakConnectorKeySet(
-  today: { year: number; month: number; day: number } = STREAK_DISPLAY_TODAY,
+  today: LocalDateParts = getLocalTodayParts(),
   goal: number = STREAK_DAILY_STEP_GOAL,
 ): Set<string> {
   const set = buildActiveStreakDateKeySet(today, goal);
@@ -136,7 +138,7 @@ export function buildStreakDayConnections(
 }
 
 export function stepsForDateKey(dateKey: string): number {
-  return MOCK_STREAK_STEPS_BY_DATE[dateKey] ?? 0;
+  return getStepsHistory()[dateKey] ?? MOCK_STREAK_STEPS_BY_DATE[dateKey] ?? 0;
 }
 
 export function isStreakDayComplete(steps: number, goal: number = STREAK_DAILY_STEP_GOAL): boolean {
@@ -155,7 +157,7 @@ function isCompleteOnCalendarDay(
 export function buildMonthGrid(
   year: number,
   month: number,
-  today: { year: number; month: number; day: number } = STREAK_DISPLAY_TODAY,
+  today: LocalDateParts = getLocalTodayParts(),
 ): StreakMonthWeek[] {
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstOffset = mondayFirstColumnIndex(new Date(year, month - 1, 1));
@@ -224,7 +226,7 @@ function todayOrdinal(today: { year: number; month: number; day: number }): numb
 }
 
 export function buildActiveStreakDateKeySet(
-  today: { year: number; month: number; day: number } = STREAK_DISPLAY_TODAY,
+  today: LocalDateParts = getLocalTodayParts(),
   goal: number = STREAK_DAILY_STEP_GOAL,
 ): Set<string> {
   const set = new Set<string>();
@@ -248,7 +250,7 @@ export function buildActiveStreakDateKeySet(
 export function streakCalendarDayTone(
   day: StreakMonthDay,
   activeStreakKeys: Set<string>,
-  today: { year: number; month: number; day: number } = STREAK_DISPLAY_TODAY,
+  today: LocalDateParts = getLocalTodayParts(),
   goal: number = STREAK_DAILY_STEP_GOAL,
 ): StreakCalendarDayTone {
   if (day.isPadding || !day.inCurrentMonth) return 'empty';
@@ -308,7 +310,7 @@ export function computeCurrentStreak(
 }
 
 export function computeCurrentStreakThroughToday(
-  today: { year: number; month: number; day: number } = STREAK_DISPLAY_TODAY,
+  today: LocalDateParts = getLocalTodayParts(),
   goal: number = STREAK_DAILY_STEP_GOAL,
 ): number {
   let streak = 0;
@@ -358,7 +360,7 @@ export type StreakWeekDayUi = {
 export type StreakWeekDayUiState = 'complete' | 'today-open' | 'future' | 'missed';
 
 export function buildStreakWeekDays(
-  today: { year: number; month: number; day: number } = STREAK_DISPLAY_TODAY,
+  today: LocalDateParts = getLocalTodayParts(),
 ): StreakWeekDayUi[] {
   const anchor = new Date(today.year, today.month - 1, today.day);
   const mondayOffset = (anchor.getDay() + 6) % 7;
@@ -374,7 +376,7 @@ export function buildStreakWeekDays(
     const dayNum = d.getDate();
     const dateKey = dateKeyFromParts(year, month, dayNum);
     const isToday = year === today.year && month === today.month && dayNum === today.day;
-    const steps = isToday ? STEPS_TODAY.steps : stepsForDateKey(dateKey);
+    const steps = isToday ? getTodayStepsLive() : stepsForDateKey(dateKey);
     days.push({
       dateKey,
       weekday: WEEKDAY_SHORT[i],
@@ -388,7 +390,7 @@ export function buildStreakWeekDays(
 
 export function streakWeekDayUiState(
   day: StreakWeekDayUi,
-  today: { year: number; month: number; day: number } = STREAK_DISPLAY_TODAY,
+  today: LocalDateParts = getLocalTodayParts(),
   goal: number = STREAK_DAILY_STEP_GOAL,
 ): StreakWeekDayUiState {
   const complete = isStreakDayComplete(day.steps, goal);
@@ -431,6 +433,9 @@ export function weekDayToPill(
   };
 }
 
-export function buildHomeWeekPills(goal: number = STREAK_DAILY_STEP_GOAL): CalendarDayPillModel[] {
-  return STEPS_TODAY.week.map((d) => weekDayToPill(d, goal));
+export function buildHomeWeekPills(
+  week: StreakWeekDay[],
+  goal: number = STREAK_DAILY_STEP_GOAL,
+): CalendarDayPillModel[] {
+  return week.map((d) => weekDayToPill(d, goal));
 }

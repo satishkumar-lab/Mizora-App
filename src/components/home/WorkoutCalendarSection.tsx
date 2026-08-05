@@ -12,7 +12,7 @@ import {
   isStreakDayComplete,
   STREAK_DAILY_STEP_GOAL,
 } from '@/lib/streakCalendar';
-import { STEPS_TODAY } from '@/constants/stepsToday';
+import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
@@ -20,8 +20,11 @@ function formatStreakCount(days: number): string {
   return String(Math.max(0, days)).padStart(2, '0');
 }
 
-function streakHeroCopy(streakDays: number): { label: string; headline: string; detail: string } {
-  const today = STEPS_TODAY.week.find((d) => d.isToday);
+function streakHeroCopy(
+  streakDays: number,
+  week: { isToday: boolean; steps: number }[],
+): { label: string; headline: string; detail: string } {
+  const today = week.find((d) => d.isToday);
   const todayMet = today !== undefined && isStreakDayComplete(today.steps, STREAK_DAILY_STEP_GOAL);
 
   if (streakDays === 0) {
@@ -63,8 +66,14 @@ function CalendarNavButton() {
   );
 }
 
-function StreakHeroBand({ streakDays }: { streakDays: number }) {
-  const { label, headline, detail } = streakHeroCopy(streakDays);
+function StreakHeroBand({
+  streakDays,
+  week,
+}: {
+  streakDays: number;
+  week: { isToday: boolean; steps: number }[];
+}) {
+  const { label, headline, detail } = streakHeroCopy(streakDays, week);
   const showFlame = streakDays >= 2;
   const { colors } = useMizoraTheme();
 
@@ -129,8 +138,8 @@ function StreakHeroBand({ streakDays }: { streakDays: number }) {
 }
 
 /** “This week” row — keep layout unchanged when editing hero above. */
-function StreakThisWeekSection() {
-  const pills = buildHomeWeekPills(STREAK_DAILY_STEP_GOAL);
+function StreakThisWeekSection({ week }: { week: Parameters<typeof buildHomeWeekPills>[0] }) {
+  const pills = buildHomeWeekPills(week, STREAK_DAILY_STEP_GOAL);
   const { colors } = useMizoraTheme();
 
   return (
@@ -150,13 +159,14 @@ function StreakThisWeekSection() {
 }
 
 export function WorkoutCalendarSection() {
+  const { snapshot } = useSteps();
   const streakDays = computeCurrentStreakThroughToday();
 
   return (
     <Card className="gap-0 rounded-[24px] p-4">
-      <StreakHeroBand streakDays={streakDays} />
+      <StreakHeroBand streakDays={streakDays} week={snapshot.week} />
       <View className="my-4 h-px bg-[#f2f3f0] dark:bg-[#2a332a]" />
-      <StreakThisWeekSection />
+      <StreakThisWeekSection week={snapshot.week} />
     </Card>
   );
 }

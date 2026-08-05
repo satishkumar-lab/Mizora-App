@@ -9,11 +9,15 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.mizora.mobile"
+      "bundleIdentifier": "app.mizora.mobile",
+      "infoPlist": {
+        "NSMotionUsageDescription": "Mizora counts your steps from motion data to track daily goals and unlock challenges."
+      }
     },
     "android": {
       "package": "app.mizora.mobile",
       "versionCode": 1,
+      "permissions": ["android.permission.ACTIVITY_RECOGNITION"],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

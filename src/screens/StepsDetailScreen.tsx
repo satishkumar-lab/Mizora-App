@@ -13,14 +13,15 @@ import { WeekStepsSelector } from '@/components/steps/WeekStepsSelector';
 import { Card } from '@/components/ui/Card';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { TitleSubtitleBlock } from '@/components/ui/TitleSubtitleBlock';
 import { mizoraCardElevationStyle } from '@/utils/platformStyles';
 import { useDailyStepGoal } from '@/hooks/useDailyStepGoal';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+import { useSteps } from '@/providers/StepsProvider';
 import {
   ACTIVE_STEP_UNLOCK,
-  STEPS_TODAY,
   stepsRemainingForUnlock,
   stepsRemainingToGoal,
 } from '@/constants/stepsToday';
@@ -161,12 +162,14 @@ export function StepsDetailScreen() {
   const { colors } = useMizoraTheme();
   const { goal, refresh } = useDailyStepGoal();
   const goBack = useMizoraBack('/home');
-  const { steps, distanceKm, activeMinutes, vsYesterday, hourlyHeights } = STEPS_TODAY;
+  const { snapshot, refresh: refreshSteps } = useSteps();
+  const { steps, distanceKm, activeMinutes, vsYesterday, hourlyHeights } = snapshot;
 
   useFocusEffect(
     useCallback(() => {
       void refresh();
-    }, [refresh]),
+      void refreshSteps();
+    }, [refresh, refreshSteps]),
   );
 
   const remainingGoal = stepsRemainingToGoal(steps, goal);
@@ -198,10 +201,12 @@ export function StepsDetailScreen() {
             progressPct={progressPct}
           />
 
-          <View className="gap-3">
-            <SectionLabel>Unlock impact</SectionLabel>
-            <UnlockNudgeCard />
-          </View>
+          {UNLOCK_REWARDS_V2_ENABLED ? (
+            <View className="gap-3">
+              <SectionLabel>Unlock impact</SectionLabel>
+              <UnlockNudgeCard />
+            </View>
+          ) : null}
 
           <View className="gap-3">
             <SectionLabel>Today&apos;s activity</SectionLabel>

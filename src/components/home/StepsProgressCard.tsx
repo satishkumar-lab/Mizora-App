@@ -8,7 +8,7 @@ import { StepsHourlyChart } from '@/components/steps/StepsHourlyChart';
 import { Card } from '@/components/ui/Card';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { StepsCardMenuIcon } from '@/components/icons/StepsCardMenuIcon';
-import { STEPS_TODAY } from '@/constants/stepsToday';
+import { useSteps } from '@/providers/StepsProvider';
 import { useDailyStepGoal } from '@/hooks/useDailyStepGoal';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { useHomeDashboardPreferences } from '@/providers/HomeDashboardPreferencesProvider';
@@ -20,7 +20,8 @@ type StepsProgressCardProps = {
 
 export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
   const router = useRouter();
-  const { steps } = STEPS_TODAY;
+  const { snapshot, refresh: refreshSteps } = useSteps();
+  const { steps } = snapshot;
   const { goal, refresh } = useDailyStepGoal();
   const { prefs, setStepsChartStyle, setHealthOverviewLayout } = useHomeDashboardPreferences();
   const { colors } = useMizoraTheme();
@@ -31,7 +32,8 @@ export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
   useFocusEffect(
     useCallback(() => {
       void refresh();
-    }, [refresh]),
+      void refreshSteps();
+    }, [refresh, refreshSteps]),
   );
 
   const openDetail = useCallback(() => {
