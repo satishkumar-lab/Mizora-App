@@ -10,6 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.mizora.mobile",
+      "appleTeamId": "XWG4778372",
       "infoPlist": {
         "NSMotionUsageDescription": "Mizora counts your steps from motion data to track daily goals and unlock challenges."
       }
