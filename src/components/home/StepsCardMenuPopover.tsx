@@ -4,6 +4,7 @@ import { mizoraCardElevationStyle } from '@/utils/platformStyles';
 import type { HealthOverviewLayout, StepsHomeChartStyle } from '@/lib/home-dashboard-preferences';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 export type MenuAnchor = {
   x: number;
@@ -42,11 +43,11 @@ function MenuItem({
       onPress={onPress}
       className={`flex-row items-center justify-between px-3.5 py-2.5 ${last ? '' : 'border-b border-[#f2f3f0] dark:border-[#2a332a]'}`}
     >
-      <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.textStrong }}>
-        {label}
-      </Text>
+      <Text style={{ ...mizoraType.headingH3, color: colors.textStrong }}>{label}</Text>
       {selected ? (
-        <Text style={{ fontFamily: fonts.bold, fontSize: 12, color: '#49a621' }}>✓</Text>
+        <Text style={{ ...mizoraType.bodyMedium, fontFamily: fonts.bold, color: '#49a621' }}>
+          ✓
+        </Text>
       ) : null}
     </Pressable>
   );
@@ -95,7 +96,7 @@ export function StepsCardMenuPopover({
         >
           <Text
             className="px-3.5 pb-1 pt-2.5"
-            style={{ fontFamily: fonts.medium, fontSize: 10, color: colors.textMuted }}
+            style={{ ...mizoraType.captionMedium, color: colors.textMuted }}
           >
             Layout
           </Text>
@@ -118,7 +119,7 @@ export function StepsCardMenuPopover({
           />
           <Text
             className="px-3.5 pb-1 pt-2.5"
-            style={{ fontFamily: fonts.medium, fontSize: 10, color: colors.textMuted }}
+            style={{ ...mizoraType.captionMedium, color: colors.textMuted }}
           >
             Hourly chart
           </Text>

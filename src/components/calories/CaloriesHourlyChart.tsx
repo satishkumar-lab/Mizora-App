@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { StepsHourlyValueRow } from '@/components/steps/StepsHourlyValueRow';
-import { FULL_DAY_AXIS_LABELS, HOURLY_STEP_SLOTS } from '@/constants/hourlySteps';
+import { FULL_DAY_AXIS_LABELS } from '@/constants/hourlySteps';
 import { activeCaloriesFromHourlySteps } from '@/lib/calories-estimate';
-import { fonts } from '@/theme/tokens';
+import { useSteps } from '@/providers/StepsProvider';
+import { mizoraType } from '@/theme/typography';
 
 function initialSelectedIndex(slots: readonly { label: string; hour?: number }[]): number {
   const now = new Date().getHours();
@@ -17,14 +18,15 @@ const CHART_HEIGHT = 36;
 const MIN_BAR = 3;
 
 export function CaloriesHourlyChart() {
+  const { hourlySlots } = useSteps();
   const slots = useMemo(
     () =>
-      HOURLY_STEP_SLOTS.map((s) => ({
+      hourlySlots.map((s) => ({
         label: s.label,
         hour: s.hour,
         kcal: activeCaloriesFromHourlySteps(s.steps),
       })),
-    [],
+    [hourlySlots],
   );
 
   const [selectedIndex, setSelectedIndex] = useState(() => initialSelectedIndex(slots));
@@ -68,10 +70,7 @@ export function CaloriesHourlyChart() {
 
       <View className="flex-row justify-between">
         {FULL_DAY_AXIS_LABELS.map((label) => (
-          <Text
-            key={label}
-            style={{ fontFamily: fonts.regular, fontSize: 9, lineHeight: 12, color: '#8e8e93' }}
-          >
+          <Text key={label} style={{ ...mizoraType.chartAxis, color: '#8e8e93' }}>
             {label}
           </Text>
         ))}

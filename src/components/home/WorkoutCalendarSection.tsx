@@ -15,6 +15,7 @@ import {
 import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 function formatStreakCount(days: number): string {
   return String(Math.max(0, days)).padStart(2, '0');
@@ -107,10 +108,8 @@ function StreakHeroBand({
         </Text>
         <View className="flex-row flex-wrap items-center gap-1">
           <Text
-            numberOfLines={1}
             style={{
-              fontFamily: fonts.medium,
-              fontSize: 16,
+              ...mizoraType.sectionTitle,
               color: colors.textStrong,
               lineHeight: 19,
             }}
@@ -144,9 +143,7 @@ function StreakThisWeekSection({ week }: { week: Parameters<typeof buildHomeWeek
 
   return (
     <View style={{ gap: 10 }}>
-      <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.textSecondary }}>
-        This week
-      </Text>
+      <Text style={{ ...mizoraType.bodyMedium, color: colors.textSecondary }}>This week</Text>
       <View className="flex-row gap-1">
         {pills.map((d) => (
           <View key={`${d.weekday}-${d.day}`} className="flex-1">

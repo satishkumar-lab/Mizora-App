@@ -163,7 +163,7 @@ export function StepsDetailScreen() {
   const { goal, refresh } = useDailyStepGoal();
   const goBack = useMizoraBack('/home');
   const { snapshot, refresh: refreshSteps } = useSteps();
-  const { steps, distanceKm, activeMinutes, vsYesterday, hourlyHeights } = snapshot;
+  const { steps, distanceKm, activeMinutes, vsYesterday, hourlySlots } = snapshot;
 
   useFocusEffect(
     useCallback(() => {
@@ -222,7 +222,7 @@ export function StepsDetailScreen() {
           <View className="gap-3">
             <SectionLabel>Trends</SectionLabel>
             <Card className="px-3.5 py-3.5">
-              <StepsHourlyChart heights={hourlyHeights} variant="detail" />
+              <StepsHourlyChart slots={hourlySlots} variant="detail" />
             </Card>
             <WeekSection goal={goal} />
           </View>

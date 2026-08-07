@@ -12,6 +12,17 @@ module.exports = {
     },
     plugins: [
       ...(appJson.expo.plugins ?? []),
+      'react-native-health-connect',
+      [
+        'expo-build-properties',
+        {
+          android: {
+            compileSdkVersion: 36,
+            targetSdkVersion: 36,
+            minSdkVersion: 26,
+          },
+        },
+      ],
       './plugins/withIosProjectPathSpacesFix.js',
       './plugins/withIosAutomaticSigning.js',
     ],

@@ -12,7 +12,7 @@ import { useSteps } from '@/providers/StepsProvider';
 import { useDailyStepGoal } from '@/hooks/useDailyStepGoal';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { useHomeDashboardPreferences } from '@/providers/HomeDashboardPreferencesProvider';
-import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 type StepsProgressCardProps = {
   compact?: boolean;
@@ -20,7 +20,7 @@ type StepsProgressCardProps = {
 
 export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
   const router = useRouter();
-  const { snapshot, refresh: refreshSteps } = useSteps();
+  const { snapshot, refresh: refreshSteps, hourlySlots } = useSteps();
   const { steps } = snapshot;
   const { goal, refresh } = useDailyStepGoal();
   const { prefs, setStepsChartStyle, setHealthOverviewLayout } = useHomeDashboardPreferences();
@@ -62,8 +62,7 @@ export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
             <MetricBadgeIcon kind="steps" size={compact ? 18 : 20} />
             <Text
               style={{
-                fontFamily: fonts.medium,
-                fontSize: compact ? 13 : 14,
+                ...(compact ? mizoraType.cardTitleCompact : mizoraType.cardTitle),
                 color: colors.textStrong,
               }}
             >
@@ -87,7 +86,11 @@ export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
           <StepsArcRing steps={steps} goal={goal} size={compact ? 'card' : 'cardSpacious'} />
         </Pressable>
 
-        <StepsHourlyChart axisMode={axisMode} chartStyle={prefs.stepsChartStyle} />
+        <StepsHourlyChart
+          slots={hourlySlots}
+          axisMode={axisMode}
+          chartStyle={prefs.stepsChartStyle}
+        />
       </Card>
 
       <StepsCardMenuPopover

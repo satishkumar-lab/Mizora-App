@@ -8,11 +8,11 @@ import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { StepsProgressCard } from '@/components/home/StepsProgressCard';
 import { todayActiveCaloriesFromSteps } from '@/constants/caloriesToday';
 import { useHomeDashboardPreferences } from '@/providers/HomeDashboardPreferencesProvider';
-import { estimateFloorsFromSteps } from '@/lib/health/stepEstimates';
+import { peakHourLabelFromSlots } from '@/lib/health/peakHourLabel';
 import { useSteps } from '@/providers/StepsProvider';
 import { useWaterIntake } from '@/providers/WaterIntakeProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
-import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 function MetricSideCard({
   titleLines,
@@ -36,32 +36,21 @@ function MetricSideCard({
     <Card className={fillColumn ? 'min-h-0 flex-1 justify-between p-4 py-5' : 'flex-1 gap-4 p-4'}>
       <View className="flex-row items-start justify-between">
         <View>
-          <Text
-            className={fillColumn ? 'text-[15px] leading-5' : 'text-sm leading-[18px]'}
-            style={{ fontFamily: fonts.medium, color: colors.textStrong }}
-          >
-            {titleLines[0]}
-          </Text>
-          <Text
-            className={fillColumn ? 'text-[15px] leading-5' : 'text-sm leading-[18px]'}
-            style={{ fontFamily: fonts.medium, color: colors.textStrong }}
-          >
-            {titleLines[1]}
-          </Text>
+          <Text style={{ ...mizoraType.cardTitle, color: colors.textStrong }}>{titleLines[0]}</Text>
+          <Text style={{ ...mizoraType.cardTitle, color: colors.textStrong }}>{titleLines[1]}</Text>
         </View>
         <MetricBadgeIcon kind={badgeKind} size={fillColumn ? 42 : 36} />
       </View>
       <Text className={fillColumn ? 'mt-auto' : undefined}>
         <Text
-          className={fillColumn ? 'text-2xl' : 'text-lg'}
-          style={{ fontFamily: fonts.bold, color: colors.textStrong }}
+          style={{
+            ...(fillColumn ? mizoraType.sideMetricValueLarge : mizoraType.sideMetricValue),
+            color: colors.textStrong,
+          }}
         >
           {value}
         </Text>
-        <Text className="text-xs" style={{ fontFamily: fonts.medium, color: colors.textSecondary }}>
-          {' '}
-          {unit}
-        </Text>
+        <Text style={{ ...mizoraType.metricUnit, color: colors.textSecondary }}> {unit}</Text>
       </Text>
     </Card>
   );
@@ -79,15 +68,15 @@ function MetricSideCard({
 
 function StatsRow() {
   const { colors, isDark } = useMizoraTheme();
-  const { snapshot, todaySteps } = useSteps();
+  const { snapshot, hourlySlots } = useSteps();
   const distanceKm = snapshot.distanceKm;
   const activeMinutes = snapshot.activeMinutes;
-  const floors = estimateFloorsFromSteps(todaySteps);
+  const peakHour = peakHourLabelFromSlots(hourlySlots);
 
   const items = [
     { value: distanceKm.toFixed(1), unit: 'km', label: 'Distance' },
     { value: String(activeMinutes), unit: 'min', label: 'Active Time' },
-    { value: String(floors), unit: '', label: 'Floors' },
+    { value: peakHour, unit: '', label: 'Peak Hour' },
   ] as const;
 
   return (
@@ -102,26 +91,17 @@ function StatsRow() {
           ) : null}
           <View className="flex-1 items-center">
             <Text>
-              <Text
-                className="text-sm"
-                style={{ fontFamily: fonts.bold, color: colors.textStrong }}
-              >
+              <Text style={{ ...mizoraType.statsValue, color: colors.textStrong }}>
                 {item.value}
               </Text>
               {item.unit ? (
-                <Text
-                  className="text-[10px]"
-                  style={{ fontFamily: fonts.medium, color: colors.textSecondary }}
-                >
+                <Text style={{ ...mizoraType.metricUnitSmall, color: colors.textSecondary }}>
                   {' '}
                   {item.unit}
                 </Text>
               ) : null}
             </Text>
-            <Text
-              className="text-xs"
-              style={{ fontFamily: fonts.medium, color: colors.textSecondary }}
-            >
+            <Text style={{ ...mizoraType.bodyMedium, color: colors.textSecondary }}>
               {item.label}
             </Text>
           </View>
@@ -149,7 +129,7 @@ export function HealthOverviewSection() {
   return (
     <View className="gap-3">
       <View className="flex-row items-center justify-between">
-        <Text className="text-base" style={{ fontFamily: fonts.medium, color: colors.textStrong }}>
+        <Text style={{ ...mizoraType.sectionTitle, color: colors.textStrong }}>
           Health Overview
         </Text>
         <LiveBadge size="sm" />

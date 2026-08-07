@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 /** Matches calories / metric flame badge — one Live style app-wide. */
 const LIVE_STYLE = {
@@ -75,9 +75,9 @@ function LivePulseDot({ outerSize }: { outerSize: number }) {
 }
 
 const SIZE_CONFIG = {
-  xs: { fontSize: 10, paddingH: 8, paddingV: 4, dot: 8 },
-  sm: { fontSize: 12, paddingH: 10, paddingV: 6, dot: 10 },
-  md: { fontSize: 11, paddingH: 10, paddingV: 4, dot: 8 },
+  xs: { type: mizoraType.liveBadgeXs, paddingH: 8, paddingV: 4, dot: 8 },
+  sm: { type: mizoraType.liveBadge, paddingH: 10, paddingV: 6, dot: 10 },
+  md: { type: mizoraType.liveBadge, paddingH: 10, paddingV: 4, dot: 8 },
 } as const;
 
 export function LiveBadge({ size = 'md' }: LiveBadgeProps) {
@@ -94,8 +94,7 @@ export function LiveBadge({ size = 'md' }: LiveBadgeProps) {
     >
       <Text
         style={{
-          fontFamily: fonts.medium,
-          fontSize: dims.fontSize,
+          ...dims.type,
           color: LIVE_STYLE.textColor,
         }}
       >

@@ -2,7 +2,7 @@ import { Text, View } from 'react-native';
 
 import { UnlockRewardsLockedPreview } from '@/components/home/UnlockRewardsLockedPreview';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
-import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 export { UnlockRewardsListCard } from '@/components/home/UnlockRewardsListCard';
 export type { UnlockRewardsListCardProps } from '@/components/home/UnlockRewardsListCard';
@@ -12,9 +12,7 @@ export function UnlockRewardsSection() {
 
   return (
     <View style={{ gap: 12 }}>
-      <Text style={{ fontFamily: fonts.medium, fontSize: 16, color: colors.textStrong }}>
-        Unlock Rewards
-      </Text>
+      <Text style={{ ...mizoraType.sectionTitle, color: colors.textStrong }}>Unlock Rewards</Text>
 
       <UnlockRewardsLockedPreview />
     </View>

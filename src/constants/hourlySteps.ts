@@ -1,4 +1,4 @@
-/** One calendar day, 12 AM → 11 PM (24 hours) — filled when Health API is wired */
+/** One calendar day, 12 AM → 11 PM (24 hours) — labels/templates; steps filled by StepsProvider on iOS. */
 export const HOURLY_STEP_SLOTS = [
   { label: '12 AM', hour: 0, steps: 0 },
   { label: '1 AM', hour: 1, steps: 0 },
@@ -26,7 +26,13 @@ export const HOURLY_STEP_SLOTS = [
   { label: '11 PM', hour: 23, steps: 0 },
 ] as const;
 
-export type HourlyStepSlot = (typeof HOURLY_STEP_SLOTS)[number];
+export type HourlyStepSlot = {
+  label: string;
+  hour: number;
+  steps: number;
+};
+
+export type HourlyStepSlotTemplate = (typeof HOURLY_STEP_SLOTS)[number];
 
 /** Index for the device’s current hour (0–23). */
 export function indexForCurrentHour(

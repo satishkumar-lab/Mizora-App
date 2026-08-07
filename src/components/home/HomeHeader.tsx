@@ -5,7 +5,7 @@ import { ProfileAvatar } from '@/components/profile/ProfileAvatar';
 import { MizoraPlusCrown } from '@/components/icons/MizoraPlusCrown';
 import { ThemeToggleButton } from '@/components/ui/ThemeToggleButton';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
-import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 export function HomeHeader() {
   const { colors, isDark } = useMizoraTheme();
@@ -40,8 +40,10 @@ export function HomeHeader() {
         >
           <MizoraPlusCrown size={14} color={isDark ? colors.textAccentGreen : undefined} />
           <Text
-            className="text-xs"
-            style={{ fontFamily: fonts.medium, color: isDark ? colors.textAccentGreen : '#5c6d05' }}
+            style={{
+              ...mizoraType.premiumChip,
+              color: isDark ? colors.textAccentGreen : '#5c6d05',
+            }}
           >
             Mizora+
           </Text>

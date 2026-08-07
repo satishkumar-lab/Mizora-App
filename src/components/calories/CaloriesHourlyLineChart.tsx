@@ -8,10 +8,11 @@ import {
 } from 'react-native';
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Polyline, Stop } from 'react-native-svg';
 
-import { FULL_DAY_AXIS_LABELS, HOURLY_STEP_SLOTS } from '@/constants/hourlySteps';
+import { FULL_DAY_AXIS_LABELS } from '@/constants/hourlySteps';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { MetricSectionHeader } from '@/components/ui/MetricSectionHeader';
 import { activeCaloriesFromHourlySteps } from '@/lib/calories-estimate';
+import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { chartGridLineStyle } from '@/utils/chartGridStyle';
 import { fonts } from '@/theme/tokens';
@@ -29,23 +30,20 @@ function indexFromX(x: number, width: number, count: number): number {
 
 export function CaloriesHourlyLineChart() {
   const { colors, isDark } = useMizoraTheme();
+  const { hourlySlots } = useSteps();
   const gridLine = chartGridLineStyle(isDark, colors);
 
   const slots = useMemo(
     () =>
-      HOURLY_STEP_SLOTS.map((s) => ({
+      hourlySlots.map((s) => ({
         label: s.label,
         kcal: activeCaloriesFromHourlySteps(s.steps),
       })),
-    [],
+    [hourlySlots],
   );
 
   const [width, setWidth] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(() => {
-    const now = new Date().getHours();
-    const idx = HOURLY_STEP_SLOTS.findIndex((s) => s.hour === now);
-    return idx >= 0 ? idx : 0;
-  });
+  const [activeIndex, setActiveIndex] = useState(() => new Date().getHours());
 
   const maxKcal = useMemo(() => Math.max(...slots.map((s) => s.kcal), 1), [slots]);
 

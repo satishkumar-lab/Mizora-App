@@ -1,5 +1,6 @@
 import type { AppBrandId } from '@/components/icons/AppBrandIcon';
 import { buildRollingWeekDays, getLocalTodayParts, localDateKey } from '@/lib/localDate';
+import type { HourlyStepSlot } from '@/constants/hourlySteps';
 import { getStepsHistory } from '@/lib/steps-live-store';
 import { DEFAULT_DAILY_STEP_GOAL } from '@/lib/steps-preferences';
 
@@ -51,6 +52,7 @@ export function createStepsTodaySnapshot(
     vsYesterday: 0,
     peakHourLabel: '—',
     hourlyHeights: [0, 0, 0, 0, 0, 0, 0, 0, 0] as number[],
+    hourlySlots: [] as HourlyStepSlot[],
     week: buildStepsWeek(todaySteps, history),
   };
 }

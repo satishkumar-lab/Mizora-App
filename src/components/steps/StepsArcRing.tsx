@@ -2,7 +2,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Text, View } from 'react-native';
 
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
-import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 export const RING_TRACK_PATH =
   'M18.5214 110.5C9.13313 99.2031 3.5 84.7596 3.5 69.0198C3.5 32.8342 33.2731 3.5 70 3.5C106.727 3.5 136.5 32.8342 136.5 69.0198C136.5 84.7596 130.867 99.2031 121.479 110.5';
@@ -32,12 +32,15 @@ function ringLayout(width: number, size: StepsArcRingProps['size']) {
   const valueTop = 38 * scale;
   const isHero = size === 'hero';
   const isCompactCard = size === 'card';
-  const valueSize = isHero ? 28 : isCompactCard ? 23.4 : 26;
-  const labelSize = 12;
+  const valueType = isHero
+    ? mizoraType.primaryMetricHero
+    : isCompactCard
+      ? mizoraType.primaryMetricCompact
+      : mizoraType.primaryMetricSpacious;
   const badgeBottom = isHero ? 2 : isCompactCard ? 0 : 2;
   const containerHeight = svgHeight + (isHero ? 8 : isCompactCard ? 4 : 6);
 
-  return { width, scale, svgHeight, valueTop, valueSize, labelSize, badgeBottom, containerHeight };
+  return { width, scale, svgHeight, valueTop, valueType, badgeBottom, containerHeight };
 }
 
 export function StepsArcRing({ steps, goal, size = 'card', showBadge = true }: StepsArcRingProps) {
@@ -84,9 +87,7 @@ export function StepsArcRing({ steps, goal, size = 'card', showBadge = true }: S
         >
           <Text
             style={{
-              fontFamily: fonts.bold,
-              fontSize: dims.valueSize,
-              lineHeight: dims.valueSize + 2,
+              ...dims.valueType,
               color: colors.textStrong,
               textAlign: 'center',
               width: '100%',
@@ -96,8 +97,7 @@ export function StepsArcRing({ steps, goal, size = 'card', showBadge = true }: S
           </Text>
           <Text
             style={{
-              fontFamily: fonts.regular,
-              fontSize: dims.labelSize,
+              ...mizoraType.secondaryCopy,
               color: colors.textSecondary,
               textAlign: 'center',
               width: '100%',
@@ -123,9 +123,11 @@ export function StepsArcRing({ steps, goal, size = 'card', showBadge = true }: S
               className="rounded-full px-2 py-1"
               style={{ backgroundColor: isDark ? '#2a332a' : '#eaffe3' }}
             >
-              <Text style={{ fontSize: size === 'hero' ? 11 : 10, textAlign: 'center' }}>
-                <Text style={{ fontFamily: fonts.medium, color: '#49a621' }}>{percentLabel} </Text>
-                <Text style={{ fontFamily: fonts.medium, color: colors.textSecondary }}>
+              <Text style={{ textAlign: 'center' }}>
+                <Text style={{ ...mizoraType.secondaryCopy, color: '#49a621' }}>
+                  {percentLabel}{' '}
+                </Text>
+                <Text style={{ ...mizoraType.secondaryCopy, color: colors.textSecondary }}>
                   of daily goal
                 </Text>
               </Text>

@@ -15,7 +15,7 @@ import {
   NARROW_DAY_AXIS_LABELS,
   type HourlyChartAxisMode,
 } from '@/constants/hourlySteps';
-import { fonts } from '@/theme/tokens';
+import { mizoraType } from '@/theme/typography';
 
 const CHART_HEIGHT = 44;
 const PADDING_X = 4;
@@ -145,9 +145,7 @@ export function StepsHourlyGradientCompact({
           <Text
             key={label}
             style={{
-              fontFamily: fonts.regular,
-              fontSize: 9,
-              lineHeight: 12,
+              ...mizoraType.chartAxis,
               color: '#8e8e93',
             }}
           >

@@ -1,7 +1,11 @@
 import { Pedometer } from 'expo-sensors';
 import { Platform } from 'react-native';
 
+import { readTodayStepsFromHealthConnect } from '@/lib/health/healthConnectSteps';
+
 export type StepsReadFailure = 'unavailable' | 'denied' | 'error';
+
+export type StepsTrackingStatus = 'loading' | 'ready' | StepsReadFailure;
 
 export type StepsReadResult = { ok: true; steps: number } | { ok: false; reason: StepsReadFailure };
 
@@ -14,6 +18,10 @@ export function localDayRange(now = new Date()): { start: Date; end: Date } {
 }
 
 export async function readTodayStepCount(now = new Date()): Promise<StepsReadResult> {
+  if (Platform.OS === 'android') {
+    return readTodayStepsFromHealthConnect(now);
+  }
+
   const available = await Pedometer.isAvailableAsync();
   if (!available) {
     return { ok: false, reason: 'unavailable' };
@@ -31,9 +39,6 @@ export async function readTodayStepCount(now = new Date()): Promise<StepsReadRes
     const steps = typeof result?.steps === 'number' ? result.steps : 0;
     return { ok: true, steps: Math.max(0, Math.round(steps)) };
   } catch {
-    if (Platform.OS === 'android') {
-      return { ok: false, reason: 'unavailable' };
-    }
     return { ok: false, reason: 'error' };
   }
 }
