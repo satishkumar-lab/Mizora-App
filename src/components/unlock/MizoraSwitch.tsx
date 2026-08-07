@@ -7,6 +7,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+
 type MizoraSwitchProps = {
   value: boolean;
   onValueChange: (value: boolean) => void;
@@ -23,15 +25,21 @@ const SPRING = { damping: 18, stiffness: 280, mass: 0.6 };
 
 /** Custom switch — animated Mizora lime track, no native Switch chrome. */
 export function MizoraSwitch({ value, onValueChange, disabled }: MizoraSwitchProps) {
+  const { isDark } = useMizoraTheme();
   const progress = useSharedValue(value ? 1 : 0);
+
+  const trackOff = isDark ? '#3a4534' : '#e8ece6';
+  const trackOffBorder = isDark ? '#2a332a' : '#dde2da';
+  const trackOn = '#d4f829';
+  const trackOnBorder = '#b8e020';
 
   useEffect(() => {
     progress.value = withSpring(value ? 1 : 0, SPRING);
   }, [value, progress]);
 
   const trackStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(progress.value, [0, 1], ['#e8ece6', '#d4f829']),
-    borderColor: interpolateColor(progress.value, [0, 1], ['#dde2da', '#b8e020']),
+    backgroundColor: interpolateColor(progress.value, [0, 1], [trackOff, trackOn]),
+    borderColor: interpolateColor(progress.value, [0, 1], [trackOffBorder, trackOnBorder]),
   }));
 
   const thumbStyle = useAnimatedStyle(() => ({

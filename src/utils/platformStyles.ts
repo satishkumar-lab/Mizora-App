@@ -1,12 +1,12 @@
 import { Platform, StyleSheet, type ViewStyle } from 'react-native';
 
 /** Soft card lift on iOS; clean border on Android (elevation looks harsh on light UI). */
-export function mizoraCardElevationStyle(): ViewStyle {
+export function mizoraCardElevationStyle(isDark = false): ViewStyle {
   if (Platform.OS === 'android') {
     return {
       elevation: 0,
-      borderWidth: 1,
-      borderColor: '#f2f3f0',
+      borderWidth: isDark ? 0.7 : 1,
+      borderColor: isDark ? '#2a332a' : '#f2f3f0',
     };
   }
 

@@ -1,13 +1,13 @@
 import { useColorScheme } from 'nativewind';
 import { useEffect, useState, type PropsWithChildren } from 'react';
 import { View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 
+import { MizoraStatusBar } from '@/components/ui/MizoraStatusBar';
 import { loadMizoraTheme } from '@/lib/theme-storage';
 
 /** Restores saved light/dark preference and applies NativeWind color scheme. */
 export function MizoraThemeProvider({ children }: PropsWithChildren) {
-  const { setColorScheme, colorScheme } = useColorScheme();
+  const { setColorScheme } = useColorScheme();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export function MizoraThemeProvider({ children }: PropsWithChildren) {
 
   return (
     <>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <MizoraStatusBar />
       {children}
     </>
   );

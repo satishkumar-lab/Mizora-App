@@ -1,8 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/** Bump when onboarding must be shown again (e.g. new production flow). */
+export const CURRENT_ONBOARDING_FLOW_VERSION = 2;
+
 const KEYS = {
   complete: '@mizora/onboarding_complete',
   displayName: '@mizora/display_name',
+  flowVersion: '@mizora/onboarding_flow_version',
 } as const;
 
 export const onboardingStorageKeys = KEYS;
@@ -12,8 +16,11 @@ export type OnboardingProfile = {
 };
 
 export async function getOnboardingComplete(): Promise<boolean> {
-  const value = await AsyncStorage.getItem(KEYS.complete);
-  return value === 'true';
+  const pairs = await AsyncStorage.multiGet([KEYS.complete, KEYS.flowVersion]);
+  const complete = pairs.find(([key]) => key === KEYS.complete)?.[1];
+  const flowVersion = pairs.find(([key]) => key === KEYS.flowVersion)?.[1];
+  if (complete !== 'true') return false;
+  return flowVersion === String(CURRENT_ONBOARDING_FLOW_VERSION);
 }
 
 export async function getDisplayName(): Promise<string | null> {
@@ -25,6 +32,7 @@ export async function completeOnboarding(profile: OnboardingProfile = {}): Promi
   const memberSince = new Date().toISOString();
   await AsyncStorage.multiSet([
     [KEYS.complete, 'true'],
+    [KEYS.flowVersion, String(CURRENT_ONBOARDING_FLOW_VERSION)],
     [KEYS.displayName, trimmed && trimmed.length > 0 ? trimmed : ''],
     ['@mizora/profile/member_since', memberSince],
   ]);
@@ -32,5 +40,5 @@ export async function completeOnboarding(profile: OnboardingProfile = {}): Promi
 
 /** Dev / settings helper — not wired in UI yet */
 export async function resetOnboardingForDev(): Promise<void> {
-  await AsyncStorage.multiRemove([KEYS.complete, KEYS.displayName]);
+  await AsyncStorage.multiRemove([KEYS.complete, KEYS.displayName, KEYS.flowVersion]);
 }
