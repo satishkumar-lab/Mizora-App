@@ -25,7 +25,16 @@ import {
 import { readTodayStepCount, type StepsTrackingStatus } from '@/lib/health/readTodaySteps';
 import { loadStepsHistory, upsertTodaySteps } from '@/lib/steps-history-storage';
 import { setStepsLiveState } from '@/lib/steps-live-store';
-import { getDailyStepGoal } from '@/lib/steps-preferences';
+import {
+  getDailyStepGoal,
+  migrateLegacyStepGoalIfNeeded,
+  DEFAULT_DAILY_STEP_GOAL,
+} from '@/lib/steps-preferences';
+import { resetHealthConnectInitCache } from '@/lib/health/healthConnectSteps';
+import {
+  setRequestStepPermissionOnNextSync,
+  consumeRequestStepPermissionOnNextSync,
+} from '@/lib/health/stepPermissionRequestGate';
 
 export type { StepsTrackingStatus } from '@/lib/health/readTodaySteps';
 
@@ -36,6 +45,7 @@ type StepsContextValue = {
   goal: number;
   status: StepsTrackingStatus;
   refresh: () => Promise<void>;
+  retryTracking: () => Promise<void>;
 };
 
 const StepsContext = createContext<StepsContextValue | null>(null);
@@ -82,7 +92,7 @@ function buildSnapshot(
 const LIVE_TRACKING_PLATFORMS = new Set<string>(['ios', 'android']);
 
 export function StepsProvider({ children }: { children: ReactNode }) {
-  const [goal, setGoal] = useState(10_000);
+  const [goal, setGoal] = useState(DEFAULT_DAILY_STEP_GOAL);
   const [todaySteps, setTodaySteps] = useState(0);
   const [hourlySlots, setHourlySlots] = useState<HourlyStepSlot[]>(() =>
     HOURLY_STEP_SLOTS.map((s) => ({ ...s })),
@@ -117,6 +127,7 @@ export function StepsProvider({ children }: { children: ReactNode }) {
   }, [applyLive]);
 
   const loadMetadata = useCallback(async () => {
+    await migrateLegacyStepGoalIfNeeded();
     const [goalValue, storedHistory] = await Promise.all([getDailyStepGoal(), loadStepsHistory()]);
     setGoal(goalValue);
     const mergedHistory = mergeStoredHistoryWithLiveToday(storedHistory, todayStepsRef.current);
@@ -126,6 +137,7 @@ export function StepsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refresh = useCallback(async () => {
+    await migrateLegacyStepGoalIfNeeded();
     const [goalValue, storedHistory] = await Promise.all([getDailyStepGoal(), loadStepsHistory()]);
     setGoal(goalValue);
 
@@ -137,7 +149,9 @@ export function StepsProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const read = await readTodayStepCount();
+    const read = await readTodayStepCount(undefined, {
+      requestPermission: consumeRequestStepPermissionOnNextSync(),
+    });
     if (!read.ok) {
       const todayKey = localTodayDateKey();
       const fallback = storedHistory[todayKey] ?? 0;
@@ -148,6 +162,15 @@ export function StepsProvider({ children }: { children: ReactNode }) {
     const merged = await upsertTodaySteps(read.steps);
     applyLive(read.steps, merged, 'ready');
   }, [applyLive]);
+
+  const retryTracking = useCallback(async () => {
+    if (Platform.OS === 'android') {
+      resetHealthConnectInitCache();
+    }
+    setRequestStepPermissionOnNextSync(true);
+    setStatus('loading');
+    await refresh();
+  }, [refresh]);
 
   useEffect(() => {
     if (!LIVE_TRACKING_PLATFORMS.has(Platform.OS)) {
@@ -195,15 +218,17 @@ export function StepsProvider({ children }: { children: ReactNode }) {
     }
 
     liveSyncRef.current = live.syncNow;
-    void Promise.all([getDailyStepGoal(), loadStepsHistory()]).then(
-      ([goalValue, storedHistory]) => {
-        setGoal(goalValue);
-        const mergedHistory = mergeStoredHistoryWithLiveToday(storedHistory, todayStepsRef.current);
-        historyRef.current = mergedHistory;
-        setHistory(mergedHistory);
-        setStepsLiveState(todayStepsRef.current, mergedHistory);
-      },
-    );
+    void Promise.all([
+      migrateLegacyStepGoalIfNeeded(),
+      getDailyStepGoal(),
+      loadStepsHistory(),
+    ]).then(([, goalValue, storedHistory]) => {
+      setGoal(goalValue);
+      const mergedHistory = mergeStoredHistoryWithLiveToday(storedHistory, todayStepsRef.current);
+      historyRef.current = mergedHistory;
+      setHistory(mergedHistory);
+      setStepsLiveState(todayStepsRef.current, mergedHistory);
+    });
 
     return () => {
       liveSyncRef.current = null;
@@ -250,8 +275,9 @@ export function StepsProvider({ children }: { children: ReactNode }) {
       goal,
       status,
       refresh,
+      retryTracking,
     }),
-    [snapshot, todaySteps, hourlySlots, goal, status, refresh],
+    [snapshot, todaySteps, hourlySlots, goal, status, refresh, retryTracking],
   );
 
   return <StepsContext.Provider value={value}>{children}</StepsContext.Provider>;

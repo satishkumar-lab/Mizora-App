@@ -10,6 +10,7 @@ import {
   type HealthGoalsState,
 } from '@/lib/steps-preferences';
 
+/** Legacy API — prefer `useSteps().goal` inside the main app (StepsProvider). */
 export function useDailyStepGoal() {
   const [goal, setGoalState] = useState(DEFAULT_DAILY_STEP_GOAL);
   const [ready, setReady] = useState(false);

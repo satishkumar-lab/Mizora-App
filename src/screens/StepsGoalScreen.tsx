@@ -11,7 +11,9 @@ import { MetricSectionHeader } from '@/components/ui/MetricSectionHeader';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useHealthGoals } from '@/hooks/useDailyStepGoal';
+import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { mainTabBarFooterInset } from '@/constants/navigation';
 import {
   STEP_GOAL_STEP,
@@ -23,12 +25,23 @@ import { MizoraSwitch } from '@/components/unlock/MizoraSwitch';
 import { fonts } from '@/theme/tokens';
 
 function RequiredChip() {
+  const { isDark } = useMizoraTheme();
   return (
     <View
       className="rounded-full px-2.5 py-1"
-      style={{ backgroundColor: 'rgba(215,255,199,0.71)' }}
+      style={{
+        backgroundColor: isDark ? 'rgba(52, 199, 89, 0.22)' : 'rgba(215,255,199,0.71)',
+      }}
     >
-      <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: '#34c759' }}>Required</Text>
+      <Text
+        style={{
+          fontFamily: fonts.medium,
+          fontSize: 10,
+          color: isDark ? '#b8f5c8' : '#34c759',
+        }}
+      >
+        Required
+      </Text>
     </View>
   );
 }
@@ -66,11 +79,15 @@ function OptionalGoalRow({
   isFirst?: boolean;
   isLast?: boolean;
 }) {
+  const { colors, isDark } = useMizoraTheme();
   const padY = optional.enabled ? 18 : 20;
+  const stepperWellBg = isDark ? colors.surfaceMuted : '#f4f6f3';
 
   return (
     <View>
-      {showDivider ? <View className="mx-[18px] h-px bg-[#f2f3f0]" /> : null}
+      {showDivider ? (
+        <View className="mx-[18px] h-px" style={{ backgroundColor: colors.borderDivider }} />
+      ) : null}
       <View
         className="gap-4 px-[18px]"
         style={{
@@ -83,7 +100,12 @@ function OptionalGoalRow({
             <MetricBadgeIcon kind={badgeKind} size={40} />
             <View className="flex-1 shrink">
               <Text
-                style={{ fontFamily: fonts.medium, fontSize: 14, color: '#141c12', lineHeight: 18 }}
+                style={{
+                  fontFamily: fonts.medium,
+                  fontSize: 14,
+                  color: colors.textStrong,
+                  lineHeight: 18,
+                }}
               >
                 {title}
               </Text>
@@ -91,7 +113,7 @@ function OptionalGoalRow({
                 style={{
                   fontFamily: fonts.regular,
                   fontSize: 11,
-                  color: '#8e8e93',
+                  color: colors.textMuted,
                   lineHeight: 14,
                   marginTop: 2,
                 }}
@@ -104,7 +126,7 @@ function OptionalGoalRow({
         </View>
 
         {optional.enabled ? (
-          <View className="rounded-[12px] bg-[#f4f6f3] p-3.5">
+          <View className="rounded-[12px] p-3.5" style={{ backgroundColor: stepperWellBg }}>
             <GoalStepper
               valueLabel={valueLabel}
               unitLabel={unitLabel}
@@ -125,7 +147,9 @@ export function StepsGoalScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const goBack = useMizoraBack('/steps');
+  const { colors } = useMizoraTheme();
   const { goals: saved, persist } = useHealthGoals();
+  const { refresh: refreshStepsProvider } = useSteps();
   const [draft, setDraft] = useState<HealthGoalsState>(saved);
   const [saving, setSaving] = useState(false);
 
@@ -157,11 +181,12 @@ export function StepsGoalScreen() {
     setSaving(true);
     try {
       await persist(draft);
+      await refreshStepsProvider();
       router.back();
     } finally {
       setSaving(false);
     }
-  }, [draft, persist, router]);
+  }, [draft, persist, refreshStepsProvider, router]);
 
   const formatDistance = (km: number) =>
     km % 1 === 0 ? km.toFixed(0) : km.toFixed(1).replace(/\.0$/, '');
@@ -287,7 +312,7 @@ export function StepsGoalScreen() {
                 icon={<MetricBadgeIcon kind="steps" size={40} />}
                 trailing={<RequiredChip />}
               />
-              <View className="h-px bg-[#f2f3f0]" />
+              <View className="h-px" style={{ backgroundColor: colors.borderDivider }} />
               <GoalStepper
                 variant="hero"
                 valueLabel={draft.steps.toLocaleString()}
@@ -305,14 +330,14 @@ export function StepsGoalScreen() {
 
           <View className="gap-4">
             <View>
-              <Text style={{ fontFamily: fonts.medium, fontSize: 16, color: '#000' }}>
+              <Text style={{ fontFamily: fonts.medium, fontSize: 16, color: colors.textStrong }}>
                 Additional goals
               </Text>
               <Text
                 style={{
                   fontFamily: fonts.regular,
                   fontSize: 11,
-                  color: '#626b5e',
+                  color: colors.textSecondary,
                   marginTop: 2,
                   lineHeight: 14,
                 }}
@@ -347,8 +372,12 @@ export function StepsGoalScreen() {
         </ScrollView>
 
         <View
-          className="border-t border-[#f2f3f0] bg-mizora-bg px-5 pt-3"
-          style={{ paddingBottom: mainTabBarFooterInset(insets.bottom) }}
+          className="border-t px-5 pt-3"
+          style={{
+            paddingBottom: mainTabBarFooterInset(insets.bottom),
+            borderTopColor: colors.borderDivider,
+            backgroundColor: colors.bg,
+          }}
         >
           <GradientButton label="Save goals" onPress={() => void onSave()} disabled={saving} />
         </View>

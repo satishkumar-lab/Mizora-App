@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { CaloriesArcRing } from '@/components/calories/CaloriesArcRing';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { Card } from '@/components/ui/Card';
-import { LiveBadge } from '@/components/ui/LiveBadge';
+import { StepsLiveBadge } from '@/components/steps/StepsLiveBadge';
 import { kcalPerThousandSteps } from '@/lib/calories-estimate';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { themedHairlineColor } from '@/utils/chartGridStyle';
@@ -81,7 +81,7 @@ export function CaloriesDetailHeroCard({
             </Text>
           </View>
         </View>
-        <LiveBadge size="md" />
+        <StepsLiveBadge size="md" />
       </View>
 
       <View className="items-center px-4 py-3">
@@ -111,6 +111,21 @@ export function CaloriesMomentumBanner({
 }) {
   const positive = vsYesterdayKcal >= 0;
   const { colors, isDark } = useMizoraTheme();
+  const arrowColor = positive
+    ? isDark
+      ? colors.textAccentGreen
+      : '#49a621'
+    : isDark
+      ? '#ffb340'
+      : '#c93400';
+  const iconWellBg = positive
+    ? isDark
+      ? 'rgba(200, 245, 38, 0.14)'
+      : '#f8ffd2'
+    : isDark
+      ? 'rgba(255, 159, 64, 0.14)'
+      : '#fff4e8';
+
   return (
     <View
       className="overflow-hidden rounded-[18px] border border-[#f2f3f0] px-4 py-4 dark:border-[#2a332a]"
@@ -119,9 +134,11 @@ export function CaloriesMomentumBanner({
       <View className="flex-row items-start gap-3">
         <View
           className="h-10 w-10 items-center justify-center rounded-full"
-          style={{ backgroundColor: isDark ? '#2a332a' : '#f8ffd2' }}
+          style={{ backgroundColor: iconWellBg }}
         >
-          <Text style={{ fontSize: 18 }}>{positive ? '↑' : '↓'}</Text>
+          <Text style={{ fontSize: 18, lineHeight: 22, color: arrowColor, fontFamily: fonts.bold }}>
+            {positive ? '↑' : '↓'}
+          </Text>
         </View>
         <View className="flex-1">
           <Text

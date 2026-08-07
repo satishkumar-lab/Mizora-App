@@ -4,14 +4,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
-import { UNLOCK_IMPACT_HREF, UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
+import { UNLOCK_REWARDS_V2_ENABLED, weeklyReportHref } from '@/constants/productScope';
 import { NotificationFeedSectionCard } from '@/components/notifications/NotificationFeedSectionCard';
 import { NotificationHeaderIcon } from '@/components/notifications/NotificationHeaderIcon';
 import { WeeklyReportInboxCard } from '@/components/notifications/WeeklyReportInboxCard';
+import { useNotificationInboxForScreen } from '@/demo/notifications/NotificationDemoProvider';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ThemedScreen } from '@/components/ui/ThemedScreen';
 import {
-  MOCK_NOTIFICATION_FEED,
   NOTIFICATION_FEED_SECTION_LABEL,
   type NotificationFeedItem,
   type NotificationFeedSection,
@@ -45,27 +45,55 @@ export function NotificationsScreen() {
   const router = useRouter();
   const goBack = useMizoraBack('/home');
   const { isDark, colors } = useMizoraTheme();
-  const grouped = groupFeedBySection(MOCK_NOTIFICATION_FEED);
+  const {
+    feed,
+    isDemo,
+    markRead: markDemoRead,
+    isRead: isDemoRead,
+    weeklyReportActive,
+    weeklyReportUnread,
+    markWeeklyReportRead,
+  } = useNotificationInboxForScreen();
 
-  const [readIds, setReadIds] = useState(() => initialReadNotificationIds(MOCK_NOTIFICATION_FEED));
+  const grouped = groupFeedBySection(feed);
+
+  const [localReadIds, setLocalReadIds] = useState(() => initialReadNotificationIds(feed));
   const [weeklyReportRead, setWeeklyReportRead] = useState(false);
 
-  const isItemRead = useCallback((id: string) => readIds.has(id), [readIds]);
+  const showWeeklyReportCard = UNLOCK_REWARDS_V2_ENABLED || (__DEV__ && weeklyReportActive);
 
-  const markItemRead = useCallback((id: string) => {
-    setReadIds((prev) => {
-      if (prev.has(id)) return prev;
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
-  }, []);
+  const weeklyCardRead = UNLOCK_REWARDS_V2_ENABLED ? weeklyReportRead : !weeklyReportUnread;
+
+  const isItemRead = useCallback(
+    (id: string) => (isDemo ? isDemoRead(id) : localReadIds.has(id)),
+    [isDemo, isDemoRead, localReadIds],
+  );
+
+  const markItemRead = useCallback(
+    (id: string) => {
+      if (isDemo) {
+        markDemoRead(id);
+        return;
+      }
+      setLocalReadIds((prev) => {
+        if (prev.has(id)) return prev;
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
+    },
+    [isDemo, markDemoRead],
+  );
 
   const unreadTotal = useMemo(() => {
-    const feedUnread = MOCK_NOTIFICATION_FEED.filter((n) => n.unread && !readIds.has(n.id)).length;
-    const weeklyUnread = UNLOCK_REWARDS_V2_ENABLED && !weeklyReportRead ? 1 : 0;
+    const feedUnread = feed.filter((n) => n.unread && !isItemRead(n.id)).length;
+    const weeklyUnread =
+      (UNLOCK_REWARDS_V2_ENABLED && !weeklyReportRead) ||
+      (__DEV__ && weeklyReportActive && weeklyReportUnread)
+        ? 1
+        : 0;
     return feedUnread + weeklyUnread;
-  }, [readIds, weeklyReportRead]);
+  }, [feed, isItemRead, weeklyReportActive, weeklyReportRead, weeklyReportUnread]);
 
   return (
     <>
@@ -88,17 +116,34 @@ export function NotificationsScreen() {
           }}
           showsVerticalScrollIndicator={false}
         >
-          {UNLOCK_REWARDS_V2_ENABLED ? (
+          {__DEV__ && isDemo ? (
+            <Text
+              style={{
+                fontFamily: fonts.medium,
+                fontSize: 11,
+                color: colors.textMuted,
+                textAlign: 'center',
+              }}
+            >
+              Demo inbox (development preview)
+            </Text>
+          ) : null}
+
+          {showWeeklyReportCard ? (
             <WeeklyReportInboxCard
-              read={weeklyReportRead}
+              read={weeklyCardRead}
               onPress={() => {
-                setWeeklyReportRead(true);
-                router.push(UNLOCK_IMPACT_HREF);
+                if (UNLOCK_REWARDS_V2_ENABLED) {
+                  setWeeklyReportRead(true);
+                } else if (__DEV__) {
+                  markWeeklyReportRead();
+                }
+                router.push(weeklyReportHref());
               }}
             />
           ) : null}
 
-          {MOCK_NOTIFICATION_FEED.length === 0 ? (
+          {feed.length === 0 && !showWeeklyReportCard ? (
             <Text
               style={{
                 fontFamily: fonts.regular,

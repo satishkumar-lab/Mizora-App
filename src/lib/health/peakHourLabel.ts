@@ -48,3 +48,33 @@ export function peakHourLabelFromSlots(slots: readonly HourlyStepSlot[], now = n
 
   return formatPeakHourRange(best.hour);
 }
+
+/** Peak hour across all buckets (e.g. weekly report — includes full day, not only hours so far). */
+export function peakWalkWindowFromSlots(slots: readonly HourlyStepSlot[]): string {
+  if (slots.length === 0) {
+    return 'No Activity';
+  }
+
+  let best = slots[0]!;
+  for (let i = 1; i < slots.length; i += 1) {
+    const slot = slots[i]!;
+    if (slot.steps > best.steps) {
+      best = slot;
+    } else if (slot.steps === best.steps && slot.hour < best.hour) {
+      best = slot;
+    }
+  }
+
+  if (best.steps <= 0) {
+    return 'No Activity';
+  }
+
+  return formatPeakHourRange(best.hour);
+}
+
+export function weeklyPeakWalkNotificationCopy(peakWindow: string): string {
+  if (peakWindow === 'No Activity') {
+    return 'Keep moving — your peak walk time will show up here once we see more steps.';
+  }
+  return `Most of your walks this week happened around ${peakWindow}.`;
+}

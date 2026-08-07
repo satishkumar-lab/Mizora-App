@@ -1,8 +1,10 @@
-import { Stack, usePathname } from 'expo-router';
-import { View } from 'react-native';
+import { Redirect, Stack, usePathname } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MainNav } from '@/components/home/MainNav';
+import { getOnboardingComplete } from '@/lib/onboarding-storage';
 import { UnlockRewardsProvider } from '@/providers/UnlockRewardsProvider';
 import { PersonalizationProvider } from '@/providers/PersonalizationProvider';
 import { StepsProvider } from '@/providers/StepsProvider';
@@ -17,6 +19,40 @@ export default function MainAppLayout() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const hideNav = shouldHideMainNav(pathname);
+  const [onboardingGateReady, setOnboardingGateReady] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    getOnboardingComplete()
+      .then((complete) => {
+        if (mounted) {
+          setOnboardingComplete(complete);
+          setOnboardingGateReady(true);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setOnboardingComplete(false);
+          setOnboardingGateReady(true);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!onboardingGateReady) {
+    return (
+      <View className="flex-1 items-center justify-center bg-mizora-bg dark:bg-mizora-bg-dark">
+        <ActivityIndicator color="#34c759" />
+      </View>
+    );
+  }
+
+  if (!onboardingComplete) {
+    return <Redirect href="/onboarding" />;
+  }
 
   return (
     <StepsProvider>

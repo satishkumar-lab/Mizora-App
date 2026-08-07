@@ -1,4 +1,4 @@
-import { STREAK_DAILY_STEP_GOAL } from '@/lib/streakCalendar';
+import { DEFAULT_DAILY_STEP_GOAL } from '@/lib/steps-preferences';
 import {
   achievementMonthLabel,
   activeAchievementMonth,
@@ -41,7 +41,7 @@ const MONTHLY_ACHIEVEMENT_DEFS: MonthlyAchievementDefinition[] = [
     id: 'month-18-goal-days',
     title: 'Step goal grind',
     subtitle: '18 days this month',
-    task: `Hit ${STREAK_DAILY_STEP_GOAL.toLocaleString()}+ streak steps on 18 days this month`,
+    task: `Hit your daily step goal on 18 days this month`,
     icon: 'steps',
     accent: '#e4f6c8',
     progress: (ctx) => ({ current: streakGoalDaysInMonth(ctx), target: 18 }),
@@ -137,14 +137,20 @@ export type ResolvedAchievement = MonthlyAchievementDefinition & {
 
 export function resolveMonthlyAchievements(
   ctx: AchievementMonthContext = activeAchievementMonth(),
+  dailyStepGoal: number = DEFAULT_DAILY_STEP_GOAL,
 ): ResolvedAchievement[] {
   const monthLabel = achievementMonthLabel(ctx);
 
   return MONTHLY_ACHIEVEMENT_DEFS.map((def) => {
-    const { current, target } = def.progress(ctx);
+    const { current, target } = achievementProgressForDef(def, ctx, dailyStepGoal);
     const unlocked = current >= target;
+    let task = def.task;
+    if (def.id === 'month-18-goal-days') {
+      task = `Hit ${dailyStepGoal.toLocaleString()}+ steps on 18 days this month`;
+    }
     return {
       ...def,
+      task,
       unlocked,
       progressLabel: formatProgress(current, target),
       monthLabel,
@@ -152,11 +158,29 @@ export function resolveMonthlyAchievements(
   });
 }
 
+function achievementProgressForDef(
+  def: MonthlyAchievementDefinition,
+  ctx: AchievementMonthContext,
+  dailyStepGoal: number,
+): { current: number; target: number } {
+  if (def.id === 'month-18-goal-days') {
+    return { current: streakGoalDaysInMonth(ctx, dailyStepGoal), target: 18 };
+  }
+  if (def.id === 'month-10-streak-run') {
+    return { current: longestStreakRunInMonth(ctx, dailyStepGoal), target: 10 };
+  }
+  if (def.id === 'month-perfect-week') {
+    return { current: longestStreakRunInMonth(ctx, dailyStepGoal) >= 7 ? 1 : 0, target: 1 };
+  }
+  return def.progress(ctx);
+}
+
 /** Streak home row — four distinct icon types when possible. */
 export function achievementPreview(
   ctx: AchievementMonthContext = activeAchievementMonth(),
+  dailyStepGoal: number = DEFAULT_DAILY_STEP_GOAL,
 ): ResolvedAchievement[] {
-  const all = resolveMonthlyAchievements(ctx);
+  const all = resolveMonthlyAchievements(ctx, dailyStepGoal);
   const iconPriority: AchievementIconKind[] = [
     'walk',
     'streak',

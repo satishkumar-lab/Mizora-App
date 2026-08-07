@@ -15,11 +15,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ForwardChevronIcon } from '@/components/icons/ForwardChevronIcon';
 import { MetricBadgeIcon, type MetricBadgeKind } from '@/components/icons/MetricBadgeIcon';
 import { SettingsGroupDivider } from '@/components/settings/SettingsGroupDivider';
-import { useDailyStepGoal } from '@/hooks/useDailyStepGoal';
+import { useSteps } from '@/providers/StepsProvider';
+import { useStepsMetricsLive } from '@/hooks/useStepsMetricsLive';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { activeCaloriesFromSteps } from '@/lib/calories-estimate';
 import { computeCurrentStreakThroughToday } from '@/lib/streakCalendar';
-import { useSteps } from '@/providers/StepsProvider';
 import { useWaterIntake } from '@/providers/WaterIntakeProvider';
 import { fonts } from '@/theme/tokens';
 import { mizoraBottomSheetStyle, mizoraProminentCardStyle } from '@/utils/platformStyles';
@@ -135,19 +135,28 @@ export function QuickActionsSheet({ visible, onClose }: QuickActionsSheetProps) 
   const listBorder = isDark ? colors.borderDivider : '#e8ece6';
   const sheetTint = isDark ? colors.bg : '#f4f6f3';
 
-  const { goal: stepGoal } = useDailyStepGoal();
+  const { goal: stepGoal, todaySteps } = useSteps();
+  const { metricsLive } = useStepsMetricsLive();
   const { loggedMl, goalMl } = useWaterIntake();
-  const { todaySteps } = useSteps();
-  const streakDays = computeCurrentStreakThroughToday();
-  const activeKcal = activeCaloriesFromSteps(todaySteps);
+  const streakDays = metricsLive ? computeCurrentStreakThroughToday(undefined, stepGoal) : 0;
+  const activeKcal = metricsLive ? activeCaloriesFromSteps(todaySteps) : null;
 
   const actions = useMemo((): QuickActionItem[] => {
-    const streakSubtitle =
-      streakDays === 0
+    const streakSubtitle = !metricsLive
+      ? 'Step tracking off — open calendar to connect'
+      : streakDays === 0
         ? 'Start today — open your calendar'
         : streakDays === 1
           ? '1 day — keep the chain going'
           : `${streakDays} days — view calendar & wins`;
+
+    const caloriesSubtitle = !metricsLive
+      ? 'Enable step tracking to estimate active kcal'
+      : `${activeKcal!.toLocaleString()} kcal active · from your steps`;
+
+    const stepsSubtitle = !metricsLive
+      ? 'Connect steps for live progress & charts'
+      : `${todaySteps.toLocaleString()} steps · charts & weekly view`;
 
     return [
       {
@@ -167,7 +176,7 @@ export function QuickActionsSheet({ visible, onClose }: QuickActionsSheetProps) 
       {
         id: 'calories',
         label: 'Calories burned',
-        subtitle: `${activeKcal.toLocaleString()} kcal active · from your steps`,
+        subtitle: caloriesSubtitle,
         href: '/calories',
         kind: 'calories',
       },
@@ -181,7 +190,7 @@ export function QuickActionsSheet({ visible, onClose }: QuickActionsSheetProps) 
       {
         id: 'steps-detail',
         label: "Today's progress",
-        subtitle: `${todaySteps.toLocaleString()} steps · charts & weekly view`,
+        subtitle: stepsSubtitle,
         href: '/steps',
         kind: 'activeTime',
       },
@@ -193,7 +202,7 @@ export function QuickActionsSheet({ visible, onClose }: QuickActionsSheetProps) 
         kind: 'distance',
       },
     ];
-  }, [activeKcal, goalMl, loggedMl, stepGoal, streakDays, todaySteps]);
+  }, [activeKcal, goalMl, loggedMl, metricsLive, stepGoal, streakDays, todaySteps]);
 
   const sheetMaxHeight = Math.min(height * 0.54, 500);
 

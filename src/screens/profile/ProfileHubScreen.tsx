@@ -140,8 +140,20 @@ export function ProfileHubScreen() {
               value={isDark ? 'Dark' : 'Light'}
               leading={<MetricBadgeIcon kind="goal" size={40} appearance="read" />}
               onPress={toggleTheme}
-              isLast
+              isLast={!__DEV__}
             />
+            {__DEV__ ? (
+              <>
+                <SettingsGroupDivider />
+                <SettingsRow
+                  label="Notification demo"
+                  subtitle="Preview banners & inbox (dev only)"
+                  leading={<MetricBadgeIcon kind="activeTime" size={40} />}
+                  onPress={() => router.push('/notification-demo')}
+                  isLast
+                />
+              </>
+            ) : null}
           </SettingsSection>
 
           <SettingsSection

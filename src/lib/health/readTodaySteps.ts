@@ -3,11 +3,16 @@ import { Platform } from 'react-native';
 
 import { readTodayStepsFromHealthConnect } from '@/lib/health/healthConnectSteps';
 
-export type StepsReadFailure = 'unavailable' | 'denied' | 'error';
+export type StepsReadFailure = 'unavailable' | 'denied' | 'error' | 'pending';
 
 export type StepsTrackingStatus = 'loading' | 'ready' | StepsReadFailure;
 
 export type StepsReadResult = { ok: true; steps: number } | { ok: false; reason: StepsReadFailure };
+
+export type ReadTodayStepsOptions = {
+  /** When true, shows the system permission sheet if access is not granted yet. */
+  requestPermission?: boolean;
+};
 
 /** Local calendar day bounds for step queries. */
 export function localDayRange(now = new Date()): { start: Date; end: Date } {
@@ -17,9 +22,14 @@ export function localDayRange(now = new Date()): { start: Date; end: Date } {
   return { start, end };
 }
 
-export async function readTodayStepCount(now = new Date()): Promise<StepsReadResult> {
+export async function readTodayStepCount(
+  now = new Date(),
+  options: ReadTodayStepsOptions = {},
+): Promise<StepsReadResult> {
+  const requestPermission = options.requestPermission ?? false;
+
   if (Platform.OS === 'android') {
-    return readTodayStepsFromHealthConnect(now);
+    return readTodayStepsFromHealthConnect(now, { requestPermission });
   }
 
   const available = await Pedometer.isAvailableAsync();
@@ -27,7 +37,14 @@ export async function readTodayStepCount(now = new Date()): Promise<StepsReadRes
     return { ok: false, reason: 'unavailable' };
   }
 
-  const permission = await Pedometer.requestPermissionsAsync();
+  let permission = await Pedometer.getPermissionsAsync();
+  if (permission.status === 'undetermined') {
+    if (!requestPermission) {
+      return { ok: false, reason: 'pending' };
+    }
+    permission = await Pedometer.requestPermissionsAsync();
+  }
+
   if (permission.status !== 'granted') {
     return { ok: false, reason: 'denied' };
   }

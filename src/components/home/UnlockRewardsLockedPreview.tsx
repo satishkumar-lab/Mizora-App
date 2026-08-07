@@ -29,6 +29,65 @@ const ROW_H_PAD = 16;
 const CARD_PAD = 12;
 const CARD_HEIGHT = 300;
 
+function UnlockPreviewFrostOverlay({ isDark }: { isDark: boolean }) {
+  const frostTint = isDark ? 'dark' : 'light';
+  const gradientColors = isDark
+    ? (['rgba(26, 33, 24, 0.08)', 'rgba(26, 33, 24, 0.55)', 'rgba(26, 33, 24, 0.88)'] as const)
+    : ([
+        'rgba(255, 255, 255, 0.05)',
+        'rgba(250, 251, 244, 0.62)',
+        'rgba(255, 255, 255, 0.92)',
+      ] as const);
+
+  if (Platform.OS === 'ios') {
+    return (
+      <>
+        <BlurView intensity={28} tint={frostTint} style={StyleSheet.absoluteFill} />
+        <LinearGradient colors={[...gradientColors]} style={StyleSheet.absoluteFill} />
+      </>
+    );
+  }
+
+  // Android: no BlurView — layered scrims (blur looked uneven on Android).
+  if (isDark) {
+    return (
+      <>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(15, 20, 16, 0.72)' }]} />
+        <LinearGradient
+          colors={['rgba(15, 20, 16, 0.55)', 'rgba(15, 20, 16, 0.82)', 'rgba(15, 20, 16, 0.96)']}
+          locations={[0, 0.45, 1]}
+          style={StyleSheet.absoluteFill}
+        />
+      </>
+    );
+  }
+
+  const baseVeil = 'rgba(255, 255, 255, 0.78)';
+  const midVeil = 'rgba(252, 253, 247, 0.9)';
+  const bottomVeil = 'rgba(255, 255, 255, 0.97)';
+
+  return (
+    <>
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: baseVeil }]} />
+      <LinearGradient
+        colors={[baseVeil, midVeil, bottomVeil]}
+        locations={[0, 0.42, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={['transparent', 'rgba(228, 255, 184, 0.18)', 'rgba(221, 251, 67, 0.28)'] as const}
+        locations={[0, 0.55, 1]}
+        style={[StyleSheet.absoluteFill, { opacity: 0.95 }]}
+      />
+      <LinearGradient
+        colors={['rgba(255,255,255,0.35)', 'transparent']}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 48 }}
+        pointerEvents="none"
+      />
+    </>
+  );
+}
+
 function PreviewTeaserRows() {
   const { colors } = useMizoraTheme();
   return (
@@ -164,8 +223,23 @@ function OverlayContent({
   const { colors, isDark } = useMizoraTheme();
   const lime = isDark ? '#c8f526' : '#ddfb43';
   const limeText = isDark ? '#e4ffb8' : '#5c6d05';
-  const glassBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.55)';
+  const glassBg =
+    Platform.OS === 'android'
+      ? isDark
+        ? colors.card
+        : '#ffffff'
+      : isDark
+        ? 'rgba(255,255,255,0.06)'
+        : 'rgba(255,255,255,0.55)';
   const glassBorder = isDark ? 'rgba(200,245,38,0.35)' : 'rgba(221,251,67,0.65)';
+  const lockTileBg =
+    Platform.OS === 'android'
+      ? isDark
+        ? colors.surfaceSecondary
+        : '#f5ffbb'
+      : isDark
+        ? 'rgba(200, 245, 38, 0.14)'
+        : '#f5ffbb';
 
   return (
     <View
@@ -199,7 +273,7 @@ function OverlayContent({
               borderRadius: 14,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: isDark ? 'rgba(200, 245, 38, 0.14)' : '#f5ffbb',
+              backgroundColor: lockTileBg,
               borderWidth: 1,
               borderColor: isDark ? '#5c6d05' : '#ddfb43',
             }}
@@ -346,15 +420,6 @@ export function UnlockRewardsLockedPreview() {
     );
   }, [notifyRequested]);
 
-  const frostTint = isDark ? 'dark' : 'light';
-  const gradientColors = isDark
-    ? (['rgba(26, 33, 24, 0.08)', 'rgba(26, 33, 24, 0.55)', 'rgba(26, 33, 24, 0.88)'] as const)
-    : ([
-        'rgba(255, 255, 255, 0.05)',
-        'rgba(250, 251, 244, 0.62)',
-        'rgba(255, 255, 255, 0.92)',
-      ] as const);
-
   return (
     <View
       style={[
@@ -366,19 +431,15 @@ export function UnlockRewardsLockedPreview() {
           borderWidth: 0.67,
           borderColor: isDark ? colors.borderDivider : '#e0f0ff',
         },
-        mizoraCardElevationStyle(),
+        mizoraCardElevationStyle(isDark),
       ]}
     >
-      <PreviewTeaserRows />
+      <View style={Platform.OS === 'android' ? { opacity: 0.42 } : undefined}>
+        <PreviewTeaserRows />
+      </View>
 
       <View pointerEvents="auto" style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}>
-        <BlurView
-          intensity={Platform.OS === 'ios' ? 28 : 22}
-          tint={frostTint}
-          style={StyleSheet.absoluteFill}
-          experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
-        />
-        <LinearGradient colors={[...gradientColors]} style={StyleSheet.absoluteFill} />
+        <UnlockPreviewFrostOverlay isDark={isDark} />
 
         <View
           style={{

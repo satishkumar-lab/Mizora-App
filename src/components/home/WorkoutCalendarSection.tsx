@@ -10,8 +10,12 @@ import {
   buildHomeWeekPills,
   computeCurrentStreakThroughToday,
   isStreakDayComplete,
-  STREAK_DAILY_STEP_GOAL,
 } from '@/lib/streakCalendar';
+import {
+  StreakThisWeekUnavailable,
+  StreakTrackingUnavailableBand,
+} from '@/components/streak/StreakTrackingUnavailableBand';
+import { useStepsMetricsLive } from '@/hooks/useStepsMetricsLive';
 import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
@@ -24,15 +28,16 @@ function formatStreakCount(days: number): string {
 function streakHeroCopy(
   streakDays: number,
   week: { isToday: boolean; steps: number }[],
+  stepGoal: number,
 ): { label: string; headline: string; detail: string } {
   const today = week.find((d) => d.isToday);
-  const todayMet = today !== undefined && isStreakDayComplete(today.steps, STREAK_DAILY_STEP_GOAL);
+  const todayMet = today !== undefined && isStreakDayComplete(today.steps, stepGoal);
 
   if (streakDays === 0) {
     return {
       label: 'Streak',
       headline: 'No active streak',
-      detail: `${STREAK_DAILY_STEP_GOAL.toLocaleString()}+ steps today starts day one`,
+      detail: `${stepGoal.toLocaleString()}+ steps today starts day one`,
     };
   }
 
@@ -70,11 +75,13 @@ function CalendarNavButton() {
 function StreakHeroBand({
   streakDays,
   week,
+  stepGoal,
 }: {
   streakDays: number;
   week: { isToday: boolean; steps: number }[];
+  stepGoal: number;
 }) {
-  const { label, headline, detail } = streakHeroCopy(streakDays, week);
+  const { label, headline, detail } = streakHeroCopy(streakDays, week, stepGoal);
   const showFlame = streakDays >= 2;
   const { colors } = useMizoraTheme();
 
@@ -136,9 +143,14 @@ function StreakHeroBand({
   );
 }
 
-/** “This week” row — keep layout unchanged when editing hero above. */
-function StreakThisWeekSection({ week }: { week: Parameters<typeof buildHomeWeekPills>[0] }) {
-  const pills = buildHomeWeekPills(week, STREAK_DAILY_STEP_GOAL);
+function StreakThisWeekSection({
+  week,
+  stepGoal,
+}: {
+  week: Parameters<typeof buildHomeWeekPills>[0];
+  stepGoal: number;
+}) {
+  const pills = buildHomeWeekPills(week, stepGoal);
   const { colors } = useMizoraTheme();
 
   return (
@@ -156,14 +168,26 @@ function StreakThisWeekSection({ week }: { week: Parameters<typeof buildHomeWeek
 }
 
 export function WorkoutCalendarSection() {
-  const { snapshot } = useSteps();
-  const streakDays = computeCurrentStreakThroughToday();
+  const { metricsLive, status } = useStepsMetricsLive();
+  const { snapshot, goal } = useSteps();
+
+  if (!metricsLive) {
+    return (
+      <Card className="gap-0 rounded-[24px] p-4">
+        <StreakTrackingUnavailableBand status={status} trailing={<CalendarNavButton />} />
+        <View className="my-4 h-px bg-[#f2f3f0] dark:bg-[#2a332a]" />
+        <StreakThisWeekUnavailable />
+      </Card>
+    );
+  }
+
+  const streakDays = computeCurrentStreakThroughToday(undefined, goal);
 
   return (
     <Card className="gap-0 rounded-[24px] p-4">
-      <StreakHeroBand streakDays={streakDays} week={snapshot.week} />
+      <StreakHeroBand streakDays={streakDays} week={snapshot.week} stepGoal={goal} />
       <View className="my-4 h-px bg-[#f2f3f0] dark:bg-[#2a332a]" />
-      <StreakThisWeekSection week={snapshot.week} />
+      <StreakThisWeekSection week={snapshot.week} stepGoal={goal} />
     </Card>
   );
 }

@@ -4,8 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Card } from '@/components/ui/Card';
-import { LiveBadge } from '@/components/ui/LiveBadge';
-import { STREAK_DAILY_STEP_GOAL, streakHeroSubtitle } from '@/lib/streakCalendar';
+import { StepsLiveBadge } from '@/components/steps/StepsLiveBadge';
+import { streakHeroSubtitle } from '@/lib/streakCalendar';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
@@ -13,6 +13,7 @@ type StreakHeroMainCardProps = {
   streakDays: number;
   todaySteps: number;
   todayComplete: boolean;
+  stepGoal: number;
 };
 
 function heroHeadline(streakDays: number, todayComplete: boolean): string {
@@ -25,14 +26,15 @@ export function StreakHeroMainCard({
   streakDays,
   todaySteps,
   todayComplete,
+  stepGoal,
 }: StreakHeroMainCardProps) {
   const { colors, isDark } = useMizoraTheme();
   const subtitle = useMemo(
-    () => streakHeroSubtitle(streakDays, todayComplete),
-    [streakDays, todayComplete],
+    () => streakHeroSubtitle(streakDays, todayComplete, stepGoal),
+    [streakDays, todayComplete, stepGoal],
   );
-  const progress = Math.min(todaySteps / STREAK_DAILY_STEP_GOAL, 1);
-  const remaining = Math.max(STREAK_DAILY_STEP_GOAL - todaySteps, 0);
+  const progress = stepGoal > 0 ? Math.min(todaySteps / stepGoal, 1) : 0;
+  const remaining = Math.max(stepGoal - todaySteps, 0);
   const headline = heroHeadline(streakDays, todayComplete);
 
   return (
@@ -56,7 +58,7 @@ export function StreakHeroMainCard({
                 STEP STREAK
               </Text>
             </View>
-            {streakDays > 0 ? <LiveBadge size="xs" /> : null}
+            {streakDays > 0 ? <StepsLiveBadge size="xs" /> : null}
           </View>
 
           <View className="flex-row items-end justify-between">
@@ -118,7 +120,7 @@ export function StreakHeroMainCard({
                   fontVariant: ['tabular-nums'],
                 }}
               >
-                {todaySteps.toLocaleString()} / {STREAK_DAILY_STEP_GOAL.toLocaleString()}
+                {todaySteps.toLocaleString()} / {stepGoal.toLocaleString()}
               </Text>
             </View>
             <View

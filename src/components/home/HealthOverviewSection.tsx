@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { Pressable, Text, View, type LayoutChangeEvent } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
-import { LiveBadge } from '@/components/ui/LiveBadge';
+import { StepsLiveBadge } from '@/components/steps/StepsLiveBadge';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { StepsProgressCard } from '@/components/home/StepsProgressCard';
 import { todayActiveCaloriesFromSteps } from '@/constants/caloriesToday';
-import { useHomeDashboardPreferences } from '@/providers/HomeDashboardPreferencesProvider';
+import { isStepsTrackingReady } from '@/lib/health/stepsTrackingUi';
 import { peakHourLabelFromSlots } from '@/lib/health/peakHourLabel';
+import { useHomeDashboardPreferences } from '@/providers/HomeDashboardPreferencesProvider';
 import { useSteps } from '@/providers/StepsProvider';
 import { useWaterIntake } from '@/providers/WaterIntakeProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
@@ -66,9 +67,14 @@ function MetricSideCard({
   return card;
 }
 
-function StatsRow() {
+function StatsRow({ metricsLive }: { metricsLive: boolean }) {
   const { colors, isDark } = useMizoraTheme();
   const { snapshot, hourlySlots } = useSteps();
+
+  if (!metricsLive) {
+    return null;
+  }
+
   const distanceKm = snapshot.distanceKm;
   const activeMinutes = snapshot.activeMinutes;
   const peakHour = peakHourLabelFromSlots(hourlySlots);
@@ -115,9 +121,10 @@ export function HealthOverviewSection() {
   const router = useRouter();
   const { colors } = useMizoraTheme();
   const { prefs } = useHomeDashboardPreferences();
-  const { todaySteps } = useSteps();
+  const { todaySteps, status } = useSteps();
+  const metricsLive = isStepsTrackingReady(status);
   const isSplit = prefs.healthOverviewLayout === 'split';
-  const activeKcal = todayActiveCaloriesFromSteps(todaySteps);
+  const activeKcal = metricsLive ? todayActiveCaloriesFromSteps(todaySteps) : null;
   const { homeDisplay: waterHome } = useWaterIntake();
   const [stepsColumnHeight, setStepsColumnHeight] = useState<number | null>(null);
 
@@ -132,7 +139,7 @@ export function HealthOverviewSection() {
         <Text style={{ ...mizoraType.sectionTitle, color: colors.textStrong }}>
           Health Overview
         </Text>
-        <LiveBadge size="sm" />
+        <StepsLiveBadge size="sm" />
       </View>
 
       {isSplit ? (
@@ -147,7 +154,7 @@ export function HealthOverviewSection() {
             <MetricSideCard
               variant="column-fill"
               titleLines={['Calories', 'Burned']}
-              value={String(activeKcal)}
+              value={metricsLive ? String(activeKcal) : '—'}
               unit="kcal"
               badgeKind="calories"
               onPress={() => router.push('/calories')}
@@ -168,7 +175,7 @@ export function HealthOverviewSection() {
           <View className="flex-row gap-2.5">
             <MetricSideCard
               titleLines={['Calories', 'Burned']}
-              value={String(activeKcal)}
+              value={metricsLive ? String(activeKcal) : '—'}
               unit="kcal"
               badgeKind="calories"
               onPress={() => router.push('/calories')}
@@ -184,7 +191,7 @@ export function HealthOverviewSection() {
         </>
       )}
 
-      <StatsRow />
+      <StatsRow metricsLive={metricsLive} />
     </View>
   );
 }

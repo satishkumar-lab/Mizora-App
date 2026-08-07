@@ -17,12 +17,14 @@ import {
   saveWaterIntakeSnapshot,
   type WaterIntakeSnapshot,
 } from '@/lib/water-intake-storage';
+import { applyWaterLogDeltaMl, trimWaterHourlyToMax, sumWaterHourlyMl } from '@/lib/water-hourly';
 
 type WaterIntakeContextValue = {
   ready: boolean;
   loggedMl: number;
   goalMl: number;
   remainingMl: number;
+  hourlyMl: readonly number[];
   homeDisplay: { value: string; unit: 'L' };
   addMl: (delta: number) => void;
   removeMl: (amount: number) => void;
@@ -35,11 +37,25 @@ function persist(snapshot: WaterIntakeSnapshot) {
   void saveWaterIntakeSnapshot(snapshot);
 }
 
+function snapshotFromState(
+  loggedMl: number,
+  goalMl: number,
+  hourlyMl: readonly number[],
+): WaterIntakeSnapshot {
+  return {
+    dateKey: activeWaterDateKey(),
+    loggedMl,
+    goalMl,
+    hourlyMl: [...hourlyMl],
+  };
+}
+
 export function WaterIntakeProvider({ children }: PropsWithChildren) {
   const seed = defaultWaterIntakeSnapshot();
   const [ready, setReady] = useState(false);
   const [loggedMl, setLoggedMl] = useState(seed.loggedMl);
   const [goalMl, setGoalMlState] = useState(seed.goalMl);
+  const [hourlyMl, setHourlyMl] = useState<number[]>(() => [...seed.hourlyMl]);
 
   useEffect(() => {
     let mounted = true;
@@ -48,6 +64,7 @@ export function WaterIntakeProvider({ children }: PropsWithChildren) {
         if (!mounted) return;
         setLoggedMl(loaded.loggedMl);
         setGoalMlState(loaded.goalMl);
+        setHourlyMl([...loaded.hourlyMl]);
         setReady(true);
       })
       .catch(() => {
@@ -58,34 +75,36 @@ export function WaterIntakeProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
-  const applyLogged = useCallback(
-    (nextLogged: number, nextGoal = goalMl) => {
-      const goal = clampWaterGoalMl(nextGoal);
-      const logged = Math.min(Math.max(0, nextLogged), goal);
-      setLoggedMl(logged);
-      setGoalMlState(goal);
-      persist({
-        dateKey: activeWaterDateKey(),
-        loggedMl: logged,
-        goalMl: goal,
-      });
-    },
-    [goalMl],
-  );
+  const commit = useCallback((nextHourly: number[], nextGoal: number) => {
+    const goal = clampWaterGoalMl(nextGoal);
+    const trimmed = trimWaterHourlyToMax(nextHourly, goal);
+    const logged = Math.min(sumWaterHourlyMl(trimmed), goal);
+    setHourlyMl(trimmed);
+    setLoggedMl(logged);
+    setGoalMlState(goal);
+    persist(snapshotFromState(logged, goal, trimmed));
+  }, []);
 
   const setGoalMl = useCallback(
     (ml: number) => {
-      const goal = clampWaterGoalMl(ml);
-      applyLogged(Math.min(loggedMl, goal), goal);
+      commit(hourlyMl, ml);
     },
-    [applyLogged, loggedMl],
+    [commit, hourlyMl],
   );
 
   const addMl = useCallback(
     (delta: number) => {
-      applyLogged(loggedMl + delta);
+      if (delta === 0) return;
+      const { hourlyMl: nextHourly, loggedMl: nextLogged } = applyWaterLogDeltaMl(
+        hourlyMl,
+        delta,
+        goalMl,
+      );
+      setHourlyMl(nextHourly);
+      setLoggedMl(nextLogged);
+      persist(snapshotFromState(nextLogged, goalMl, nextHourly));
     },
-    [applyLogged, loggedMl],
+    [goalMl, hourlyMl],
   );
 
   const removeMl = useCallback(
@@ -103,12 +122,13 @@ export function WaterIntakeProvider({ children }: PropsWithChildren) {
       loggedMl,
       goalMl,
       remainingMl,
+      hourlyMl,
       homeDisplay: formatHomeWaterDisplay(loggedMl, goalMl),
       addMl,
       removeMl,
       setGoalMl,
     }),
-    [ready, loggedMl, goalMl, remainingMl, addMl, removeMl, setGoalMl],
+    [ready, loggedMl, goalMl, remainingMl, hourlyMl, addMl, removeMl, setGoalMl],
   );
 
   return <WaterIntakeContext.Provider value={value}>{children}</WaterIntakeContext.Provider>;

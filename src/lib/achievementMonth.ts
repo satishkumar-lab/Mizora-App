@@ -3,9 +3,9 @@ import {
   buildMonthGrid,
   computeLongestStreakInMonth,
   isStreakDayComplete,
-  STREAK_DAILY_STEP_GOAL,
   stepsForDateKey,
 } from '@/lib/streakCalendar';
+import { DEFAULT_DAILY_STEP_GOAL } from '@/lib/steps-preferences';
 
 /** Demo month-scoped lock / unlock / water tallies — wire to persistence later. */
 export const MOCK_MONTHLY_CHALLENGE_PROGRESS = {
@@ -65,10 +65,10 @@ export function totalStepsInMonth(ctx: AchievementMonthContext = activeAchieveme
 
 export function streakGoalDaysInMonth(
   ctx: AchievementMonthContext = activeAchievementMonth(),
+  dailyStepGoal: number = DEFAULT_DAILY_STEP_GOAL,
 ): number {
-  return dateKeysInMonth(ctx).filter((k) =>
-    isStreakDayComplete(stepsForDateKey(k), STREAK_DAILY_STEP_GOAL),
-  ).length;
+  return dateKeysInMonth(ctx).filter((k) => isStreakDayComplete(stepsForDateKey(k), dailyStepGoal))
+    .length;
 }
 
 export function daysWithStepsAtLeastInMonth(
@@ -80,9 +80,10 @@ export function daysWithStepsAtLeastInMonth(
 
 export function longestStreakRunInMonth(
   ctx: AchievementMonthContext = activeAchievementMonth(),
+  dailyStepGoal: number = DEFAULT_DAILY_STEP_GOAL,
 ): number {
   const weeks = buildMonthGrid(ctx.year, ctx.month);
-  return computeLongestStreakInMonth(weeks, STREAK_DAILY_STEP_GOAL);
+  return computeLongestStreakInMonth(weeks, dailyStepGoal);
 }
 
 /** Rotates flavor copy every month (same difficulty, fresh names). */

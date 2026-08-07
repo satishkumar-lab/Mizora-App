@@ -12,6 +12,7 @@ import { CalendarDayPill, type CalendarDayPillVariant } from '@/components/ui/Ca
 import { WATER_TODAY, waterMlFromGlasses } from '@/constants/waterToday';
 import { WATER_VISUAL } from '@/constants/waterTheme';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+import { useWaterIntake } from '@/providers/WaterIntakeProvider';
 import { chartGridLineStyle } from '@/utils/chartGridStyle';
 import { fonts } from '@/theme/tokens';
 
@@ -36,8 +37,13 @@ function indexFromX(x: number, width: number, count: number): number {
 
 export function WeekWaterSelector() {
   const { colors, isDark } = useMizoraTheme();
+  const { loggedMl } = useWaterIntake();
   const gridLine = chartGridLineStyle(isDark, colors);
-  const week = WATER_TODAY.week;
+  const todayGlasses = Math.round(loggedMl / WATER_TODAY.mlPerGlass);
+  const week = useMemo(
+    () => WATER_TODAY.week.map((day) => (day.isToday ? { ...day, glasses: todayGlasses } : day)),
+    [todayGlasses],
+  );
   const defaultIndex = Math.max(
     0,
     week.findIndex((d) => d.isToday),

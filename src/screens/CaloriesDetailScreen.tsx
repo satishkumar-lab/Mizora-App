@@ -17,8 +17,10 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { TitleSubtitleBlock } from '@/components/ui/TitleSubtitleBlock';
 import { activeCaloriesVsYesterday, todayActiveCaloriesFromSteps } from '@/constants/caloriesToday';
+import { useStepsMetricsLive } from '@/hooks/useStepsMetricsLive';
 import { useSteps } from '@/providers/StepsProvider';
-import { useDailyStepGoal, useHealthGoals } from '@/hooks/useDailyStepGoal';
+import { StepsPermissionStateCard } from '@/components/steps/StepsPermissionStateCard';
+import { useHealthGoals } from '@/hooks/useDailyStepGoal';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import {
@@ -35,23 +37,24 @@ export function CaloriesDetailScreen() {
   const { colors, isDark } = useMizoraTheme();
   const goBack = useMizoraBack('/home');
   const { goals, refresh: refreshGoals } = useHealthGoals();
-  const { goal: stepGoal, refresh: refreshStepGoal } = useDailyStepGoal();
+  const { metricsLive, status, retryTracking } = useStepsMetricsLive();
+  const { snapshot, todaySteps, refresh: refreshSteps, goal: stepGoal } = useSteps();
 
-  const { snapshot, todaySteps, refresh: refreshSteps } = useSteps();
-
-  const activeKcal = useMemo(() => todayActiveCaloriesFromSteps(todaySteps), [todaySteps]);
+  const activeKcal = useMemo(
+    () => (metricsLive ? todayActiveCaloriesFromSteps(todaySteps) : 0),
+    [metricsLive, todaySteps],
+  );
   const vsYesterday = useMemo(
-    () => activeCaloriesVsYesterday(todaySteps, snapshot.vsYesterday),
-    [todaySteps, snapshot.vsYesterday],
+    () => (metricsLive ? activeCaloriesVsYesterday(todaySteps, snapshot.vsYesterday) : 0),
+    [metricsLive, todaySteps, snapshot.vsYesterday],
   );
   const kcalPer1k = kcalPerThousandSteps();
 
   useFocusEffect(
     useCallback(() => {
       void refreshGoals();
-      void refreshStepGoal();
       void refreshSteps();
-    }, [refreshGoals, refreshStepGoal, refreshSteps]),
+    }, [refreshGoals, refreshSteps]),
   );
 
   const ringGoal =
@@ -78,32 +81,42 @@ export function CaloriesDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="gap-6">
-          <CaloriesDetailHeroCard
-            activeKcal={activeKcal}
-            goalKcal={ringGoal}
-            stepsToday={todaySteps}
-            vsYesterdayKcal={vsYesterday}
-          />
-
-          <CaloriesMomentumBanner vsYesterdayKcal={vsYesterday} kcalPer1k={kcalPer1k} />
-
-          <View className="gap-3">
-            <SectionLabel>Today&apos;s rhythm</SectionLabel>
-            <Card className="px-3.5 py-3.5">
-              <CaloriesHourlyLineChart />
-            </Card>
-          </View>
-
-          <View className="gap-3">
-            <SectionLabel>Trends</SectionLabel>
-            <Card className="gap-3 p-4">
-              <TitleSubtitleBlock
-                title="This week"
-                subtitle="Active kcal from steps — same week as your step calendar"
+          {!metricsLive ? (
+            <StepsPermissionStateCard status={status} onPrimaryPress={() => void retryTracking()} />
+          ) : (
+            <>
+              <CaloriesDetailHeroCard
+                activeKcal={activeKcal}
+                goalKcal={ringGoal}
+                stepsToday={todaySteps}
+                vsYesterdayKcal={vsYesterday}
               />
-              <WeekCaloriesSelector />
-            </Card>
-          </View>
+
+              <CaloriesMomentumBanner vsYesterdayKcal={vsYesterday} kcalPer1k={kcalPer1k} />
+            </>
+          )}
+
+          {metricsLive ? (
+            <>
+              <View className="gap-3">
+                <SectionLabel>Today&apos;s rhythm</SectionLabel>
+                <Card className="px-3.5 py-3.5">
+                  <CaloriesHourlyLineChart />
+                </Card>
+              </View>
+
+              <View className="gap-3">
+                <SectionLabel>Trends</SectionLabel>
+                <Card className="gap-3 p-4">
+                  <TitleSubtitleBlock
+                    title="This week"
+                    subtitle="Active kcal from steps — same week as your step calendar"
+                  />
+                  <WeekCaloriesSelector />
+                </Card>
+              </View>
+            </>
+          ) : null}
 
           <Card
             className="gap-2 border p-4"

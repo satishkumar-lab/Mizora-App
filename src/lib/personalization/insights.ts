@@ -1,6 +1,7 @@
 import type { AppBrandId } from '@/components/icons/AppBrandIcon';
 import type { RewardAppItem } from '@/constants/unlockRewards';
-import { isStreakDayComplete, STREAK_DAILY_STEP_GOAL } from '@/lib/streakCalendar';
+import { isStreakDayComplete } from '@/lib/streakCalendar';
+import { DEFAULT_DAILY_STEP_GOAL } from '@/lib/steps-preferences';
 import { formatStepShort } from '@/constants/unlockRewards';
 
 export type HomeInsightSegment = {
@@ -55,6 +56,28 @@ function closestUnlockApp(apps: RewardAppItem[]): RewardAppItem | undefined {
     }
   }
   return best;
+}
+
+/** Water-only or access nudge — no step counts when live tracking is off. */
+export function buildHomeInsightWithoutLiveSteps(input: {
+  waterLoggedMl: number;
+  waterGoalMl: number;
+}): HomeInsightSegment {
+  const { waterLoggedMl, waterGoalMl } = input;
+  const waterPct = waterGoalMl > 0 ? waterLoggedMl / waterGoalMl : 0;
+  if (waterPct < 0.45 && waterGoalMl - waterLoggedMl >= 400) {
+    return {
+      before: `Hydration check: `,
+      emphasis: `${Math.round((1 - waterPct) * 100)}%`,
+      after: ' of your water goal is still open today.',
+    };
+  }
+
+  return {
+    before: 'Step tracking isn’t on yet — tap ',
+    emphasis: 'Enable Motion access',
+    after: ' in Health Overview when you’re ready. Water and goals are still here for you.',
+  };
 }
 
 /** On-device insight — no medical claims; user can turn off in settings. */
@@ -119,10 +142,10 @@ export function buildHomeInsight(input: HomeInsightInput): HomeInsightSegment {
 
   if (
     todaySteps > 0 &&
-    !isStreakDayComplete(todaySteps, STREAK_DAILY_STEP_GOAL) &&
-    todaySteps >= STREAK_DAILY_STEP_GOAL * 0.5
+    !isStreakDayComplete(todaySteps, stepGoal) &&
+    todaySteps >= stepGoal * 0.5
   ) {
-    const left = STREAK_DAILY_STEP_GOAL - todaySteps;
+    const left = stepGoal - todaySteps;
     return {
       before: `A `,
       emphasis: formatStepShort(left),

@@ -2,6 +2,7 @@ import { Redirect, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
 
 import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
+import { isDemoWeeklyImpactPreviewEnabled } from '@/demo/notifications/notificationDemoWeeklyReport';
 
 type V2UnlockRouteGuardProps = {
   children: ReactNode;
@@ -11,7 +12,7 @@ type V2UnlockRouteGuardProps = {
 
 /** Keeps unlock / lock-challenge routes in the repo but off-limits in V1. */
 export function V2UnlockRouteGuard({ children, fallbackHref = '/home' }: V2UnlockRouteGuardProps) {
-  if (!UNLOCK_REWARDS_V2_ENABLED) {
+  if (!UNLOCK_REWARDS_V2_ENABLED && !isDemoWeeklyImpactPreviewEnabled()) {
     return <Redirect href={fallbackHref} />;
   }
   return children;

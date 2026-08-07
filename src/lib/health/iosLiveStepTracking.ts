@@ -13,6 +13,7 @@ import {
 } from '@/lib/health/hourlyStepsModel';
 import { readHourlyStepsToday } from '@/lib/health/readHourlyStepsToday';
 import { readTodayStepCount, type StepsTrackingStatus } from '@/lib/health/readTodaySteps';
+import { consumeRequestStepPermissionOnNextSync } from '@/lib/health/stepPermissionRequestGate';
 
 const PERSIST_DEBOUNCE_MS = 3_000;
 
@@ -218,7 +219,8 @@ export function startIosLiveStepTracking(options: IosLiveStepTrackingOptions): {
     lastEmittedSteps = -1;
 
     const now = new Date();
-    const read = await readTodayStepCount(now);
+    const requestPermission = consumeRequestStepPermissionOnNextSync();
+    const read = await readTodayStepCount(now, { requestPermission });
     if (stopped || generation !== syncGeneration) {
       return false;
     }

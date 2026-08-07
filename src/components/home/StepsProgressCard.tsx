@@ -5,11 +5,12 @@ import { Pressable, Text, View } from 'react-native';
 import { StepsCardMenuPopover, type MenuAnchor } from '@/components/home/StepsCardMenuPopover';
 import { StepsArcRing } from '@/components/steps/StepsArcRing';
 import { StepsHourlyChart } from '@/components/steps/StepsHourlyChart';
+import { StepsPermissionStateCard } from '@/components/steps/StepsPermissionStateCard';
 import { Card } from '@/components/ui/Card';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { StepsCardMenuIcon } from '@/components/icons/StepsCardMenuIcon';
+import { isStepsTrackingReady } from '@/lib/health/stepsTrackingUi';
 import { useSteps } from '@/providers/StepsProvider';
-import { useDailyStepGoal } from '@/hooks/useDailyStepGoal';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { useHomeDashboardPreferences } from '@/providers/HomeDashboardPreferencesProvider';
 import { mizoraType } from '@/theme/typography';
@@ -20,9 +21,9 @@ type StepsProgressCardProps = {
 
 export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
   const router = useRouter();
-  const { snapshot, refresh: refreshSteps, hourlySlots } = useSteps();
+  const { snapshot, refresh: refreshSteps, hourlySlots, goal, status, retryTracking } = useSteps();
   const { steps } = snapshot;
-  const { goal, refresh } = useDailyStepGoal();
+  const metricsLive = isStepsTrackingReady(status);
   const { prefs, setStepsChartStyle, setHealthOverviewLayout } = useHomeDashboardPreferences();
   const { colors } = useMizoraTheme();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -31,9 +32,8 @@ export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
 
   useFocusEffect(
     useCallback(() => {
-      void refresh();
       void refreshSteps();
-    }, [refresh, refreshSteps]),
+    }, [refreshSteps]),
   );
 
   const openDetail = useCallback(() => {
@@ -82,15 +82,24 @@ export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
           </View>
         </View>
 
-        <Pressable accessibilityRole="button" onPress={openDetail}>
-          <StepsArcRing steps={steps} goal={goal} size={compact ? 'card' : 'cardSpacious'} />
-        </Pressable>
-
-        <StepsHourlyChart
-          slots={hourlySlots}
-          axisMode={axisMode}
-          chartStyle={prefs.stepsChartStyle}
-        />
+        {metricsLive ? (
+          <>
+            <Pressable accessibilityRole="button" onPress={openDetail}>
+              <StepsArcRing steps={steps} goal={goal} size={compact ? 'card' : 'cardSpacious'} />
+            </Pressable>
+            <StepsHourlyChart
+              slots={hourlySlots}
+              axisMode={axisMode}
+              chartStyle={prefs.stepsChartStyle}
+            />
+          </>
+        ) : (
+          <StepsPermissionStateCard
+            compact={compact}
+            status={status}
+            onPrimaryPress={() => void retryTracking()}
+          />
+        )}
       </Card>
 
       <StepsCardMenuPopover

@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { StepsArcRing } from '@/components/steps/StepsArcRing';
 import { Card } from '@/components/ui/Card';
-import { LiveBadge } from '@/components/ui/LiveBadge';
+import { StepsLiveBadge } from '@/components/steps/StepsLiveBadge';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { themedHairlineColor } from '@/utils/chartGridStyle';
 import { fonts } from '@/theme/tokens';
@@ -75,7 +75,7 @@ export function StepsDetailHeroCard({
             </Text>
           </View>
         </View>
-        <LiveBadge size="md" />
+        <StepsLiveBadge size="md" />
       </View>
 
       <View className="items-center px-4 py-3">

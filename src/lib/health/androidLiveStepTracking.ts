@@ -7,6 +7,7 @@ import {
   readHourlyStepsTodayFromHealthConnect,
   readTodayStepsFromHealthConnect,
 } from '@/lib/health/healthConnectSteps';
+import { consumeRequestStepPermissionOnNextSync } from '@/lib/health/stepPermissionRequestGate';
 import {
   applyLiveDeltaToCurrentHour,
   emptyHourlyBuckets,
@@ -207,7 +208,8 @@ export function startAndroidLiveStepTracking(options: AndroidLiveStepTrackingOpt
     changesToken = undefined;
 
     const now = new Date();
-    const read = await readTodayStepsFromHealthConnect(now);
+    const requestPermission = consumeRequestStepPermissionOnNextSync();
+    const read = await readTodayStepsFromHealthConnect(now, { requestPermission });
     if (stopped || generation !== syncGeneration) {
       return false;
     }

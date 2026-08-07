@@ -9,6 +9,7 @@ import {
   type StreakWeekDayUi,
   type StreakWeekDayUiState,
 } from '@/lib/streakCalendar';
+import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { themedHairlineColor } from '@/utils/chartGridStyle';
 import { fonts } from '@/theme/tokens';
@@ -96,15 +97,21 @@ function WeekDayDot({
 
 type StreakWeekProgressCardProps = {
   streakDays: number;
+  metricsLive?: boolean;
 };
 
-export function StreakWeekProgressCard({ streakDays }: StreakWeekProgressCardProps) {
+export function StreakWeekProgressCard({
+  streakDays,
+  metricsLive = true,
+}: StreakWeekProgressCardProps) {
+  const { goal } = useSteps();
   const week = buildStreakWeekDays();
   const { colors, isDark } = useMizoraTheme();
   const hairline = themedHairlineColor(isDark, colors);
 
-  const subtitle =
-    streakDays >= 2
+  const subtitle = !metricsLive
+    ? 'Step streaks resume when live step tracking is on.'
+    : streakDays >= 2
       ? `You're on a ${streakDays}-day streak! 🔥`
       : streakDays === 1
         ? 'One day down — stack another tomorrow.'
@@ -126,16 +133,30 @@ export function StreakWeekProgressCard({ streakDays }: StreakWeekProgressCardPro
         {subtitle}
       </Text>
       <View className="mt-3 h-px" style={{ backgroundColor: hairline }} />
-      <View className="flex-row justify-between px-0.5 pt-4">
-        {week.map((day: StreakWeekDayUi, i) => (
-          <WeekDayDot
-            key={day.dateKey}
-            label={WEEK_LABELS[i] ?? '·'}
-            state={streakWeekDayUiState(day)}
-            letter={WEEK_LABELS[i] ?? day.weekday.charAt(0)}
-          />
-        ))}
-      </View>
+      {metricsLive ? (
+        <View className="flex-row justify-between px-0.5 pt-4">
+          {week.map((day: StreakWeekDayUi, i) => (
+            <WeekDayDot
+              key={day.dateKey}
+              label={WEEK_LABELS[i] ?? '·'}
+              state={streakWeekDayUiState(day, undefined, goal)}
+              letter={WEEK_LABELS[i] ?? day.weekday.charAt(0)}
+            />
+          ))}
+        </View>
+      ) : (
+        <Text
+          style={{
+            fontFamily: fonts.regular,
+            fontSize: 12,
+            color: colors.textMuted,
+            lineHeight: 16,
+            marginTop: 12,
+          }}
+        >
+          Daily goal markers appear here once step tracking is available.
+        </Text>
+      )}
     </Card>
   );
 }

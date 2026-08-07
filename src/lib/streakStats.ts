@@ -4,7 +4,8 @@ import {
   estimateDistanceKmFromSteps,
 } from '@/lib/health/stepEstimates';
 import { getStepsHistory, getTodayStepsLive } from '@/lib/steps-live-store';
-import { isStreakDayComplete, STREAK_DAILY_STEP_GOAL, stepsForDateKey } from '@/lib/streakCalendar';
+import { isStreakDayComplete, stepsForDateKey } from '@/lib/streakCalendar';
+import { DEFAULT_DAILY_STEP_GOAL } from '@/lib/steps-preferences';
 
 export type StreakPersonalRecord = {
   id: string;
@@ -25,7 +26,7 @@ export function computeMaxStepsInHistory(): number {
   return Math.max(0, ...historyValues, getTodayStepsLive());
 }
 
-export function computeLongestStreakAllTime(goal: number = STREAK_DAILY_STEP_GOAL): number {
+export function computeLongestStreakAllTime(goal: number = DEFAULT_DAILY_STEP_GOAL): number {
   const keys = Object.keys(getStepsHistory()).sort();
   let best = 0;
   let run = 0;
@@ -65,7 +66,14 @@ function formatActiveTime(minutes: number): string {
   return `${h}h ${m}m`;
 }
 
-export function buildPersonalRecords(): StreakPersonalRecord[] {
+export function buildPersonalRecords(metricsLive = true): StreakPersonalRecord[] {
+  if (!metricsLive) {
+    return MOCK_PERSONAL_RECORDS.map((row) => ({
+      ...row,
+      value: '—',
+    }));
+  }
+
   const maxSteps = computeMaxStepsInHistory();
 
   const values: Record<string, string> = {

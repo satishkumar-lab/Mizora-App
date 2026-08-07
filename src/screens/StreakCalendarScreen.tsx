@@ -1,8 +1,8 @@
+import { StatusBar } from 'expo-status-bar';
 import { useMemo } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedScreen } from '@/components/ui/ThemedScreen';
-import { StatusBar } from 'expo-status-bar';
 
 import { CalendarOutlineIcon } from '@/components/icons/CalendarOutlineIcon';
 import { CircleIconButton, useCircleIconButtonStyle } from '@/components/ui/CircleIconButton';
@@ -10,25 +10,26 @@ import { StreakAchievementsCard } from '@/components/streak/StreakAchievementsCa
 import { StreakHeroMainCard } from '@/components/streak/StreakHeroMainCard';
 import { StreakPersonalRecordsCard } from '@/components/streak/StreakPersonalRecordsCard';
 import { StreakWeekProgressCard } from '@/components/streak/StreakWeekProgressCard';
+import {
+  StreakThisWeekUnavailable,
+  StreakTrackingUnavailableBand,
+} from '@/components/streak/StreakTrackingUnavailableBand';
+import { StepsPermissionStateCard } from '@/components/steps/StepsPermissionStateCard';
+import { Card } from '@/components/ui/Card';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { getLocalTodayParts } from '@/constants/streakHistory';
-import { useSteps } from '@/providers/StepsProvider';
+import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
+import { achievementPreview } from '@/constants/achievements';
+import { useStepsMetricsLive } from '@/hooks/useStepsMetricsLive';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
-import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
+import { localTodayDateKey } from '@/lib/localDate';
 import {
   computeCurrentStreakThroughToday,
   isStreakDayComplete,
   stepsForDateKey,
-  STREAK_DAILY_STEP_GOAL,
 } from '@/lib/streakCalendar';
-import { achievementPreview } from '@/constants/achievements';
 import { buildPersonalRecords } from '@/lib/streakStats';
-
-function todayDateKey(): string {
-  const t = getLocalTodayParts();
-  return `${t.year}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}`;
-}
+import { useSteps } from '@/providers/StepsProvider';
 
 function StreakHeaderCalendarIcon() {
   const { iconColor } = useCircleIconButtonStyle(36);
@@ -43,20 +44,34 @@ export function StreakCalendarScreen() {
   const insets = useSafeAreaInsets();
   const goBack = useMizoraBack('/home');
   const { isDark } = useMizoraTheme();
+  const { metricsLive, status, retryTracking } = useStepsMetricsLive();
+  const { todaySteps: liveTodaySteps, goal } = useSteps();
 
-  const { todaySteps: liveTodaySteps } = useSteps();
+  const onRetry = () => {
+    void retryTracking();
+  };
 
-  const streakDays = useMemo(() => computeCurrentStreakThroughToday(), []);
-  const todaySteps = useMemo(
-    () => Math.max(stepsForDateKey(todayDateKey()), liveTodaySteps),
-    [liveTodaySteps],
+  const todayKey = localTodayDateKey();
+
+  const streakDays = useMemo(
+    () => (metricsLive ? computeCurrentStreakThroughToday(undefined, goal) : 0),
+    [goal, metricsLive],
   );
+  const todaySteps = useMemo(() => {
+    if (!metricsLive) {
+      return 0;
+    }
+    return Math.max(stepsForDateKey(todayKey), liveTodaySteps);
+  }, [liveTodaySteps, metricsLive, todayKey]);
   const todayComplete = useMemo(
-    () => isStreakDayComplete(todaySteps, STREAK_DAILY_STEP_GOAL),
-    [todaySteps],
+    () => metricsLive && isStreakDayComplete(todaySteps, goal),
+    [todaySteps, goal, metricsLive],
   );
-  const personalRecords = useMemo(() => buildPersonalRecords(), []);
-  const achievementBadges = useMemo(() => achievementPreview(), []);
+  const personalRecords = useMemo(() => buildPersonalRecords(metricsLive), [metricsLive]);
+  const achievementBadges = useMemo(
+    () => (metricsLive ? achievementPreview(undefined, goal) : []),
+    [goal, metricsLive],
+  );
 
   return (
     <>
@@ -78,15 +93,32 @@ export function StreakCalendarScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ gap: 16 }}>
-            <StreakHeroMainCard
-              streakDays={streakDays}
-              todaySteps={todaySteps}
-              todayComplete={todayComplete}
-            />
+            {!metricsLive ? (
+              <>
+                <StepsPermissionStateCard status={status} onPrimaryPress={onRetry} />
+                <Card className="gap-4 p-4">
+                  <StreakTrackingUnavailableBand status={status} />
+                  <View className="h-px bg-[#f2f3f0] dark:bg-[#2a332a]" />
+                  <StreakThisWeekUnavailable />
+                </Card>
+                <StreakWeekProgressCard streakDays={0} metricsLive={false} />
+              </>
+            ) : (
+              <>
+                <StreakHeroMainCard
+                  streakDays={streakDays}
+                  todaySteps={todaySteps}
+                  todayComplete={todayComplete}
+                  stepGoal={goal}
+                />
+                <StreakWeekProgressCard streakDays={streakDays} metricsLive />
+              </>
+            )}
 
-            <StreakAchievementsCard badges={achievementBadges} />
-            <StreakWeekProgressCard streakDays={streakDays} />
             <StreakPersonalRecordsCard records={personalRecords} />
+            {metricsLive && achievementBadges.length > 0 ? (
+              <StreakAchievementsCard badges={achievementBadges} />
+            ) : null}
           </View>
         </ScrollView>
       </ThemedScreen>

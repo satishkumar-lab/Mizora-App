@@ -21,11 +21,19 @@ function isAndroid(): boolean {
   return Platform.OS === 'android';
 }
 
-async function ensureHealthConnectReady(): Promise<
-  { ok: true } | { ok: false; reason: StepsReadFailure }
-> {
+async function ensureHealthConnectReady(
+  options: {
+    requestPermission?: boolean;
+  } = {},
+): Promise<{ ok: true } | { ok: false; reason: StepsReadFailure }> {
   if (!isAndroid()) {
     return { ok: false, reason: 'unavailable' };
+  }
+
+  const shouldRequestPermission = options.requestPermission ?? false;
+
+  if (shouldRequestPermission) {
+    initPromise = null;
   }
 
   if (!initPromise) {
@@ -46,6 +54,10 @@ async function ensureHealthConnectReady(): Promise<
       );
       if (hasSteps) {
         return 'ready';
+      }
+
+      if (!shouldRequestPermission) {
+        return 'pending';
       }
 
       const requested = await requestPermission([STEPS_READ_PERMISSION]);
@@ -90,8 +102,11 @@ export async function aggregateStepsBetween(start: Date, end: Date): Promise<num
   return Math.max(0, Math.round(result.COUNT_TOTAL ?? 0));
 }
 
-export async function readTodayStepsFromHealthConnect(now = new Date()): Promise<StepsReadResult> {
-  const ready = await ensureHealthConnectReady();
+export async function readTodayStepsFromHealthConnect(
+  now = new Date(),
+  options: { requestPermission?: boolean } = {},
+): Promise<StepsReadResult> {
+  const ready = await ensureHealthConnectReady(options);
   if (!ready.ok) {
     return { ok: false, reason: ready.reason };
   }
@@ -110,7 +125,9 @@ export async function readHourlyStepsTodayFromHealthConnect(
 ): Promise<ReadHourlyStepsResult> {
   const ready = await ensureHealthConnectReady();
   if (!ready.ok) {
-    return { ok: false, reason: ready.reason === 'denied' ? 'unavailable' : ready.reason };
+    const reason =
+      ready.reason === 'denied' || ready.reason === 'pending' ? 'unavailable' : ready.reason;
+    return { ok: false, reason };
   }
 
   const { start: dayStart } = localDayRange(now);

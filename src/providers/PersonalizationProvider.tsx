@@ -11,10 +11,12 @@ import {
 import type { AppBrandId } from '@/components/icons/AppBrandIcon';
 import {
   buildHomeInsight,
+  buildHomeInsightWithoutLiveSteps,
   buildLockSuggestions,
   type HomeInsightSegment,
   type LockSuggestion,
 } from '@/lib/personalization/insights';
+import { isStepsTrackingReady } from '@/lib/health/stepsTrackingUi';
 import {
   averageStepsFromWeek,
   recommendStepUnlockGoal,
@@ -43,7 +45,7 @@ type PersonalizationContextValue = {
 const PersonalizationContext = createContext<PersonalizationContextValue | null>(null);
 
 export function PersonalizationProvider({ children }: { children: ReactNode }) {
-  const { snapshot, todaySteps, goal: stepGoal } = useSteps();
+  const { snapshot, todaySteps, goal: stepGoal, status } = useSteps();
   const { loggedMl, goalMl: waterGoalMl } = useWaterIntake();
   const { apps, configs } = useUnlockRewards();
 
@@ -82,6 +84,12 @@ export function PersonalizationProvider({ children }: { children: ReactNode }) {
 
   const homeInsight = useMemo((): HomeInsightSegment | null => {
     if (!prefs.homeInsightsEnabled) return null;
+    if (!isStepsTrackingReady(status)) {
+      return buildHomeInsightWithoutLiveSteps({
+        waterLoggedMl: loggedMl,
+        waterGoalMl,
+      });
+    }
     return buildHomeInsight({
       todaySteps,
       stepGoal,
@@ -89,7 +97,7 @@ export function PersonalizationProvider({ children }: { children: ReactNode }) {
       waterGoalMl,
       unlockApps: apps,
     });
-  }, [prefs.homeInsightsEnabled, todaySteps, stepGoal, loggedMl, waterGoalMl, apps]);
+  }, [prefs.homeInsightsEnabled, status, todaySteps, stepGoal, loggedMl, waterGoalMl, apps]);
 
   const lockSuggestions = useMemo((): LockSuggestion[] => {
     if (!prefs.lockSuggestionsEnabled) return [];

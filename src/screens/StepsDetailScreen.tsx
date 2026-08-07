@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +16,8 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { TitleSubtitleBlock } from '@/components/ui/TitleSubtitleBlock';
 import { mizoraCardElevationStyle } from '@/utils/platformStyles';
-import { useDailyStepGoal } from '@/hooks/useDailyStepGoal';
+import { StepsPermissionStateCard } from '@/components/steps/StepsPermissionStateCard';
+import { isStepsTrackingReady } from '@/lib/health/stepsTrackingUi';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { useSteps } from '@/providers/StepsProvider';
@@ -159,21 +160,21 @@ function WeekSection({ goal }: { goal: number }) {
 export function StepsDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors } = useMizoraTheme();
-  const { goal, refresh } = useDailyStepGoal();
-  const goBack = useMizoraBack('/home');
-  const { snapshot, refresh: refreshSteps } = useSteps();
+  const { colors, isDark } = useMizoraTheme();
+  const { snapshot, refresh: refreshSteps, goal, status, retryTracking } = useSteps();
   const { steps, distanceKm, activeMinutes, vsYesterday, hourlySlots } = snapshot;
+  const metricsLive = isStepsTrackingReady(status);
 
   useFocusEffect(
     useCallback(() => {
-      void refresh();
       void refreshSteps();
-    }, [refresh, refreshSteps]),
+    }, [refreshSteps]),
   );
 
+  const goBack = useMizoraBack('/home');
+
   const remainingGoal = stepsRemainingToGoal(steps, goal);
-  const progressPct = Math.round((steps / goal) * 100);
+  const progressPct = goal > 0 ? Math.round((steps / goal) * 100) : 0;
 
   return (
     <ThemedScreen>
@@ -194,44 +195,54 @@ export function StepsDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="gap-6">
-          <HeroSummaryCard
-            steps={steps}
-            goal={goal}
-            remaining={remainingGoal}
-            progressPct={progressPct}
-          />
+          {metricsLive ? (
+            <HeroSummaryCard
+              steps={steps}
+              goal={goal}
+              remaining={remainingGoal}
+              progressPct={progressPct}
+            />
+          ) : (
+            <StepsPermissionStateCard status={status} onPrimaryPress={() => void retryTracking()} />
+          )}
 
-          {UNLOCK_REWARDS_V2_ENABLED ? (
-            <View className="gap-3">
-              <SectionLabel>Unlock impact</SectionLabel>
-              <UnlockNudgeCard />
-            </View>
+          {metricsLive ? (
+            <>
+              {UNLOCK_REWARDS_V2_ENABLED ? (
+                <View className="gap-3">
+                  <SectionLabel>Unlock impact</SectionLabel>
+                  <UnlockNudgeCard />
+                </View>
+              ) : null}
+
+              <View className="gap-3">
+                <SectionLabel>Today&apos;s activity</SectionLabel>
+                <Card className="flex-row items-center py-5">
+                  <StatTile value={distanceKm.toFixed(1)} unit="km" label="Distance" />
+                  <View className="h-12 w-px" style={{ backgroundColor: colors.borderDivider }} />
+                  <StatTile value={String(activeMinutes)} unit="min" label="Active time" />
+                  <View className="h-12 w-px" style={{ backgroundColor: colors.borderDivider }} />
+                  <StatTile value={`+${vsYesterday}`} unit="" label="vs yesterday" />
+                </Card>
+              </View>
+
+              <View className="gap-3">
+                <SectionLabel>Trends</SectionLabel>
+                <Card className="px-3.5 py-3.5">
+                  <StepsHourlyChart slots={hourlySlots} variant="detail" />
+                </Card>
+                <WeekSection goal={goal} />
+              </View>
+            </>
           ) : null}
-
-          <View className="gap-3">
-            <SectionLabel>Today&apos;s activity</SectionLabel>
-            <Card className="flex-row items-center py-5">
-              <StatTile value={distanceKm.toFixed(1)} unit="km" label="Distance" />
-              <View className="h-12 w-px" style={{ backgroundColor: colors.borderDivider }} />
-              <StatTile value={String(activeMinutes)} unit="min" label="Active time" />
-              <View className="h-12 w-px" style={{ backgroundColor: colors.borderDivider }} />
-              <StatTile value={`+${vsYesterday}`} unit="" label="vs yesterday" />
-            </Card>
-          </View>
-
-          <View className="gap-3">
-            <SectionLabel>Trends</SectionLabel>
-            <Card className="px-3.5 py-3.5">
-              <StepsHourlyChart slots={hourlySlots} variant="detail" />
-            </Card>
-            <WeekSection goal={goal} />
-          </View>
 
           <Pressable
             accessibilityRole="button"
             onPress={() => router.push('/steps/goal')}
-            className="flex-row items-center justify-between rounded-card border border-[#f2f3f0] bg-mizora-card px-4 py-4 dark:border-[#2a332a] dark:bg-mizora-card-dark"
-            style={mizoraCardElevationStyle()}
+            className={`flex-row items-center justify-between rounded-card bg-mizora-card px-4 py-4 dark:bg-mizora-card-dark ${
+              Platform.OS === 'ios' ? 'border border-[#f2f3f0] dark:border-[#2a332a]' : ''
+            }`}
+            style={mizoraCardElevationStyle(isDark)}
           >
             <View className="flex-row items-center gap-3">
               <MetricBadgeIcon kind="goal" size={40} />

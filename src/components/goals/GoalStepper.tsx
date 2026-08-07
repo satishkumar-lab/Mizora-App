@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { fonts } from '@/theme/tokens';
 
 type GoalStepperProps = {
@@ -25,21 +26,27 @@ function StepperButton({
   disabled?: boolean;
   size: 'hero' | 'compact';
 }) {
+  const { colors, isDark } = useMizoraTheme();
   const dim = size === 'hero' ? 52 : 44;
+  const idleBg = isDark ? colors.surfaceSecondary : '#fafbf4';
+  const pressedBg = isDark ? colors.surfaceMuted : '#f5ffbb';
+
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
       disabled={disabled}
-      className="items-center justify-center rounded-full border border-[#ebefea]"
+      className="items-center justify-center rounded-full"
       style={({ pressed }) => ({
         width: dim,
         height: dim,
-        backgroundColor: pressed && !disabled ? '#f5ffbb' : '#fafbf4',
+        borderWidth: 1,
+        borderColor: colors.borderDivider,
+        backgroundColor: pressed && !disabled ? pressedBg : idleBg,
         opacity: disabled ? 0.38 : 1,
       })}
     >
-      <Ionicons name={icon} size={size === 'hero' ? 24 : 20} color="#141c12" />
+      <Ionicons name={icon} size={size === 'hero' ? 24 : 20} color={colors.textStrong} />
     </Pressable>
   );
 }
@@ -54,7 +61,9 @@ export function GoalStepper({
   decreaseDisabled,
   increaseDisabled,
 }: GoalStepperProps) {
+  const { colors, isDark } = useMizoraTheme();
   const isHero = variant === 'hero';
+  const valueBg = isDark ? colors.surfaceSecondary : '#ffffff';
 
   return (
     <View className="gap-2">
@@ -66,14 +75,19 @@ export function GoalStepper({
           size={variant}
         />
         <View
-          className="flex-1 items-center rounded-[15px] border border-[#f2f3f0] bg-white px-3"
-          style={{ paddingVertical: isHero ? 14 : 10 }}
+          className="flex-1 items-center rounded-[15px] px-3"
+          style={{
+            paddingVertical: isHero ? 14 : 10,
+            borderWidth: 1,
+            borderColor: colors.borderDivider,
+            backgroundColor: valueBg,
+          }}
         >
           <Text
             style={{
               fontFamily: fonts.bold,
               fontSize: isHero ? 28 : 22,
-              color: '#141c12',
+              color: colors.textStrong,
               lineHeight: isHero ? 32 : 26,
               letterSpacing: -0.5,
             }}
@@ -85,7 +99,7 @@ export function GoalStepper({
               style={{
                 fontFamily: fonts.medium,
                 fontSize: isHero ? 12 : 11,
-                color: '#626b5e',
+                color: colors.textSecondary,
                 marginTop: 2,
               }}
             >
@@ -98,7 +112,7 @@ export function GoalStepper({
       {hint ? (
         <Text
           className="text-center"
-          style={{ fontFamily: fonts.medium, fontSize: 10, color: '#8e8e93' }}
+          style={{ fontFamily: fonts.medium, fontSize: 10, color: colors.textMuted }}
         >
           {hint}
         </Text>

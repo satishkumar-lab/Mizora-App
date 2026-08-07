@@ -2,10 +2,11 @@ import type { CalendarDayPillModel, CalendarDayPillVariant } from '@/components/
 import { MOCK_STREAK_STEPS_BY_DATE } from '@/constants/streakHistory';
 import type { StepsWeekDay } from '@/constants/stepsToday';
 import { getLocalTodayParts, type LocalDateParts } from '@/lib/localDate';
+import { DEFAULT_DAILY_STEP_GOAL } from '@/lib/steps-preferences';
 import { getStepsHistory, getTodayStepsLive } from '@/lib/steps-live-store';
 
-/** Steps to mark a day complete for streak (wire to user daily goal later). */
-export const STREAK_DAILY_STEP_GOAL = 7_000;
+/** @deprecated Import `DEFAULT_DAILY_STEP_GOAL` from `@/lib/steps-preferences` or pass the user goal from `useSteps()`. */
+export const STREAK_DAILY_STEP_GOAL = DEFAULT_DAILY_STEP_GOAL;
 
 export type StreakWeekDay = StepsWeekDay;
 
@@ -58,7 +59,7 @@ export function isNextCalendarDay(dateKeyA: string, dateKeyB: string): boolean {
 /** Active streak days + today (for connector through current day). */
 export function buildStreakConnectorKeySet(
   today: LocalDateParts = getLocalTodayParts(),
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): Set<string> {
   const set = buildActiveStreakDateKeySet(today, goal);
   set.add(dateKeyFromParts(today.year, today.month, today.day));
@@ -141,7 +142,10 @@ export function stepsForDateKey(dateKey: string): number {
   return getStepsHistory()[dateKey] ?? MOCK_STREAK_STEPS_BY_DATE[dateKey] ?? 0;
 }
 
-export function isStreakDayComplete(steps: number, goal: number = STREAK_DAILY_STEP_GOAL): boolean {
+export function isStreakDayComplete(
+  steps: number,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
+): boolean {
   return steps >= goal;
 }
 
@@ -149,7 +153,7 @@ function isCompleteOnCalendarDay(
   year: number,
   month: number,
   day: number,
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): boolean {
   return isStreakDayComplete(stepsForDateKey(dateKeyFromParts(year, month, day)), goal);
 }
@@ -227,7 +231,7 @@ function todayOrdinal(today: { year: number; month: number; day: number }): numb
 
 export function buildActiveStreakDateKeySet(
   today: LocalDateParts = getLocalTodayParts(),
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): Set<string> {
   const set = new Set<string>();
   const cursor = new Date(today.year, today.month - 1, today.day);
@@ -251,7 +255,7 @@ export function streakCalendarDayTone(
   day: StreakMonthDay,
   activeStreakKeys: Set<string>,
   today: LocalDateParts = getLocalTodayParts(),
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): StreakCalendarDayTone {
   if (day.isPadding || !day.inCurrentMonth) return 'empty';
 
@@ -275,14 +279,18 @@ export function streakCalendarDayTone(
 
 export function countGoalDaysInMonth(
   weeks: StreakMonthWeek[],
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): number {
   return weeks.flat().filter((d) => d.inCurrentMonth && isStreakDayComplete(d.steps, goal)).length;
 }
 
-export function streakHeroSubtitle(streakDays: number, todayComplete: boolean): string {
+export function streakHeroSubtitle(
+  streakDays: number,
+  todayComplete: boolean,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
+): string {
   if (streakDays === 0) {
-    return `Walk ${STREAK_DAILY_STEP_GOAL.toLocaleString()}+ steps to start your first streak.`;
+    return `Walk ${goal.toLocaleString()}+ steps to start your first streak.`;
   }
   if (!todayComplete) {
     return 'Finish today’s step goal to protect your streak.';
@@ -292,7 +300,7 @@ export function streakHeroSubtitle(streakDays: number, todayComplete: boolean): 
 
 export function computeCurrentStreak(
   days: readonly StreakWeekDay[],
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): number {
   const todayIdx = days.findIndex((d) => d.isToday);
   const ordered = todayIdx >= 0 ? days.slice(0, todayIdx + 1) : [...days];
@@ -311,7 +319,7 @@ export function computeCurrentStreak(
 
 export function computeCurrentStreakThroughToday(
   today: LocalDateParts = getLocalTodayParts(),
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): number {
   let streak = 0;
   const cursor = new Date(today.year, today.month - 1, today.day);
@@ -333,7 +341,7 @@ export function computeCurrentStreakThroughToday(
 
 export function computeLongestStreakInMonth(
   weeks: StreakMonthWeek[],
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): number {
   const flat = weeks.flat().filter((d) => d.inCurrentMonth);
   let best = 0;
@@ -391,7 +399,7 @@ export function buildStreakWeekDays(
 export function streakWeekDayUiState(
   day: StreakWeekDayUi,
   today: LocalDateParts = getLocalTodayParts(),
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): StreakWeekDayUiState {
   const complete = isStreakDayComplete(day.steps, goal);
   if (day.isToday) {
@@ -411,7 +419,7 @@ export function streakWeekDayUiState(
 
 export function weekDayToPill(
   day: StreakWeekDay,
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): CalendarDayPillModel {
   const complete = isStreakDayComplete(day.steps, goal);
   let variant: CalendarDayPillVariant;
@@ -435,7 +443,7 @@ export function weekDayToPill(
 
 export function buildHomeWeekPills(
   week: StreakWeekDay[],
-  goal: number = STREAK_DAILY_STEP_GOAL,
+  goal: number = DEFAULT_DAILY_STEP_GOAL,
 ): CalendarDayPillModel[] {
   return week.map((d) => weekDayToPill(d, goal));
 }
