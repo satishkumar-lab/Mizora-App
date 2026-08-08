@@ -1,10 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import {
-  FIGMA_ONBOARDING_CTA_BORDER,
-  FIGMA_ONBOARDING_CTA_FILL,
-} from '@/constants/onboardingFigmaAssets';
+import { FIGMA_ONBOARDING_LIME } from '@/constants/onboardingFigmaAssets';
 import { colors, fonts } from '@/theme/tokens';
 
 /** CTA label + arrow — always #000000 (no Pressable `disabled` opacity tint). */
@@ -21,6 +18,11 @@ type OnboardingLimeCtaProps = {
 };
 
 /** Pill CTA matching screen 2 intro (`Continue`). */
+/**
+ * Android: pill chrome (background/border/shadow) must live on a child `View`, not
+ * `Pressable` — otherwise ripple compositing drops the fill on device builds.
+ * Do not move styles back onto Pressable without verifying Android onboarding CTAs.
+ */
 export function OnboardingLimeCta({
   label,
   onPress,
@@ -41,33 +43,42 @@ export function OnboardingLimeCta({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled }}
-      // Avoid RN disabled opacity (blends with lime bg → olive-looking text).
+      android_ripple={{ color: 'rgba(20, 28, 18, 0.08)' }}
       onPress={handlePress}
-      style={({ pressed }) => [
-        styles.cta,
-        disabled ? styles.ctaDisabled : null,
-        !disabled && pressed ? styles.ctaPressed : null,
-        {
-          marginTop: (compactTop ? 8 : 18) * s,
-          paddingHorizontal: 36 * s,
-          paddingVertical: 12 * s,
-          minWidth: fullWidth ? undefined : 156 * s,
-          alignSelf: fullWidth ? 'stretch' : 'center',
-        },
-      ]}
+      style={{
+        marginTop: (compactTop ? 8 : 18) * s,
+        alignSelf: fullWidth ? 'stretch' : 'center',
+        minWidth: fullWidth ? undefined : 156 * s,
+      }}
     >
-      <View style={styles.row} pointerEvents="none">
-        <Text
-          allowFontScaling={false}
+      {({ pressed }) => (
+        <View
           style={[
-            styles.label,
-            { fontSize: 17 * Math.min(width / 393, 1.06) * 0.94, color: CTA_INK },
+            styles.cta,
+            disabled ? styles.ctaDisabled : null,
+            !disabled && pressed ? styles.ctaPressed : null,
+            {
+              paddingHorizontal: 36 * s,
+              paddingVertical: 12 * s,
+              width: fullWidth ? '100%' : undefined,
+              minWidth: fullWidth ? undefined : 156 * s,
+            },
           ]}
         >
-          {label}
-        </Text>
-        {showArrow ? <Ionicons name="arrow-forward" size={20} color={CTA_INK} /> : null}
-      </View>
+          <View style={styles.row} pointerEvents="none">
+            <Text
+              allowFontScaling={false}
+              style={[
+                styles.label,
+                { fontSize: 17 * Math.min(width / 393, 1.06) * 0.94, color: CTA_INK },
+              ]}
+            >
+              {label}
+            </Text>
+            {showArrow ? <Ionicons name="arrow-forward" size={20} color={CTA_INK} /> : null}
+          </View>
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -75,21 +86,20 @@ export function OnboardingLimeCta({
 const styles = StyleSheet.create({
   cta: {
     alignSelf: 'center',
-    backgroundColor: FIGMA_ONBOARDING_CTA_FILL,
+    backgroundColor: FIGMA_ONBOARDING_LIME,
     borderWidth: 1.5,
-    borderColor: FIGMA_ONBOARDING_CTA_BORDER,
+    borderColor: 'rgba(255,255,255,0.95)',
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
   },
   ctaDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.52)',
-    borderColor: 'rgba(255,255,255,0.65)',
+    borderColor: 'rgba(255,255,255,0.55)',
   },
   ctaPressed: {
     transform: [{ scale: 0.97 }],
