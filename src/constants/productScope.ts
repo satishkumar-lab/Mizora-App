@@ -8,6 +8,11 @@
  */
 export const UNLOCK_REWARDS_V2_ENABLED = false;
 
+/**
+ * V1 weekly health report (`/weekly-report`) — steps, water, estimated calories, peak walk.
+ */
+export const WEEKLY_HEALTH_REPORT_ENABLED = true;
+
 export const UNLOCK_IMPACT_HREF = '/rewards/impact' as const;
 export const WEEKLY_REPORT_HREF = '/weekly-report' as const;
 export const LOCK_CHALLENGE_HREF = '/rewards' as const;

@@ -73,8 +73,13 @@ export function peakWalkWindowFromSlots(slots: readonly HourlyStepSlot[]): strin
 }
 
 export function weeklyPeakWalkNotificationCopy(peakWindow: string): string {
-  if (peakWindow === 'No Activity') {
-    return 'Keep moving — your peak walk time will show up here once we see more steps.';
-  }
-  return `Most of your walks this week happened around ${peakWindow}.`;
+  return `Most of your steps this week clustered around ${peakWindow}.`;
+}
+
+export function weeklyPeakWalkEmptyCopy(): string {
+  return 'Log steps across the week — your peak walk window appears once we have activity to analyze.';
+}
+
+export function weeklyPeakWalkInsufficientCopy(): string {
+  return 'We need hourly step history for this week before we can show a reliable peak walk window.';
 }

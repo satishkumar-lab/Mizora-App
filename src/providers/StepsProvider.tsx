@@ -23,6 +23,7 @@ import {
   estimateDistanceKmFromSteps,
 } from '@/lib/health/stepEstimates';
 import { readTodayStepCount, type StepsTrackingStatus } from '@/lib/health/readTodaySteps';
+import { upsertTodayHourlyBuckets } from '@/lib/health/steps-hourly-history-storage';
 import { loadStepsHistory, upsertTodaySteps } from '@/lib/steps-history-storage';
 import { setStepsLiveState } from '@/lib/steps-live-store';
 import {
@@ -250,6 +251,12 @@ export function StepsProvider({ children }: { children: ReactNode }) {
       mounted = false;
     };
   }, [refresh]);
+
+  useEffect(() => {
+    if (status !== 'ready') return;
+    const buckets = hourlySlots.map((slot) => Math.max(0, Math.round(slot.steps)));
+    void upsertTodayHourlyBuckets(buckets);
+  }, [hourlySlots, status]);
 
   useFocusEffect(
     useCallback(() => {

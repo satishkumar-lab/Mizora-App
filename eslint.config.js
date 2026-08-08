@@ -6,6 +6,6 @@ module.exports = [
   ...expoConfig,
   prettierConfig,
   {
-    ignores: ['node_modules/', '.expo/', 'dist/', 'web-build/'],
+    ignores: ['node_modules/', '.expo/', 'dist/', 'web-build/', 'website/'],
   },
 ];

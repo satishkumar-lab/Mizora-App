@@ -8,6 +8,10 @@ export const onboardingFigmaCollage = {
 /** Figma `Main_home` / `2nd-screen` brand lime */
 export const FIGMA_ONBOARDING_LIME = '#C1FD3A';
 
+/** Primary pill on lime screens — must contrast with `FIGMA_ONBOARDING_LIME` (not the same fill). */
+export const FIGMA_ONBOARDING_CTA_FILL = '#FFFFFF';
+export const FIGMA_ONBOARDING_CTA_BORDER = 'rgba(20, 28, 18, 0.1)';
+
 export const FIGMA_ONBOARDING_FRAME_W = 393;
 export const FIGMA_ONBOARDING_FRAME_H = 852;
 

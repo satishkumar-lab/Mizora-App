@@ -1,5 +1,5 @@
-import { Redirect, Stack, usePathname } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Redirect, Stack, useFocusEffect, usePathname } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -41,6 +41,20 @@ export default function MainAppLayout() {
       mounted = false;
     };
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+      void getOnboardingComplete().then((complete) => {
+        if (mounted) {
+          setOnboardingComplete(complete);
+        }
+      });
+      return () => {
+        mounted = false;
+      };
+    }, []),
+  );
 
   if (!onboardingGateReady) {
     return (

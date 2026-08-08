@@ -8,11 +8,20 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useMizoraFonts } from '@/hooks/useMizoraFonts';
+import { NotificationDemoProvider } from '@/demo/notifications/NotificationDemoProvider';
 import { MizoraThemeProvider } from '@/providers/MizoraThemeProvider';
 
 export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
+
+function AppShell() {
+  return (
+    <View className="flex-1 bg-mizora-bg dark:bg-mizora-bg-dark">
+      <Stack screenOptions={{ headerShown: false }} />
+    </View>
+  );
+}
 
 export default function RootLayout() {
   const { loaded, error } = useMizoraFonts();
@@ -30,9 +39,13 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <MizoraThemeProvider>
-        <View className="flex-1 bg-mizora-bg dark:bg-mizora-bg-dark">
-          <Stack screenOptions={{ headerShown: false }} />
-        </View>
+        {__DEV__ ? (
+          <NotificationDemoProvider>
+            <AppShell />
+          </NotificationDemoProvider>
+        ) : (
+          <AppShell />
+        )}
       </MizoraThemeProvider>
     </SafeAreaProvider>
   );

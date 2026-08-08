@@ -1,26 +1,26 @@
 export const HELP_FAQ = [
   {
-    q: 'Why is an app still locked?',
-    a: 'You need to finish today’s challenge for that app, or meet the Lock Challenge target you set. Open Lock Challenge from Home to see what’s left.',
-  },
-  {
     q: 'Steps not updating?',
-    a: 'Allow Health or motion access for Mizora in your phone settings, then pull to refresh on Home. On Android, confirm the fitness permission under Profile → Manage permissions.',
-  },
-  {
-    q: 'Too many notifications?',
-    a: 'Profile → Notifications lets you turn off reminder types or enable quiet hours. Your streak and unlock alerts stay optional.',
+    a: 'Allow Motion (iPhone) or Health Connect (Android) for Mizora in your phone settings, then open the Steps tab and tap Try again. On Android, install or update Health Connect if prompted.',
   },
   {
     q: 'How do I change daily goals?',
-    a: 'From Home, open your steps goal (or Daily goals). Steps are required; water and other metrics are optional toggles you can turn on only when you want to track them.',
+    a: 'Open Profile → Daily step goal, or use Quick actions (+) on Home. Water goals are under Profile → Health profile or the Water tracker.',
   },
   {
-    q: 'What happens when I unlock an app?',
-    a: 'Unlock time is earned from habits like steps and water. When the timer runs out, the app locks again until you earn more or complete the next challenge.',
+    q: 'Does Mizora send push notifications?',
+    a: 'Mizora 1.0 tracks progress in the app. Push reminders are planned for a later update.',
   },
   {
     q: 'Where is my data stored?',
-    a: 'Most progress, lock lists, and goals stay on your device. Optional profile and health info personalize targets — see Profile → Privacy & data for details.',
+    a: 'Steps, water, streaks, and goals stay on your device. Optional name and health profile personalize targets — see Profile → Privacy & data.',
+  },
+  {
+    q: 'Are calorie numbers medical advice?',
+    a: 'Active calories are estimated from your steps for motivation only. They are not a medical or dietary prescription.',
+  },
+  {
+    q: 'How do I delete my data?',
+    a: 'Profile → Privacy & data → Delete data on this device removes profile and preference fields stored by that action. Step and water logs may remain until a full app reinstall.',
   },
 ] as const;

@@ -1,3 +1,4 @@
+import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { DEFAULT_DAILY_STEP_GOAL } from '@/lib/steps-preferences';
 import {
   achievementMonthLabel,
@@ -25,6 +26,13 @@ export type MonthlyAchievementDefinition = {
   accent: string;
   progress: (ctx: AchievementMonthContext) => { current: number; target: number };
 };
+
+/** Hidden in V1 — tied to app lock / mock tallies until V2 or real persistence. */
+const V1_EXCLUDED_ACHIEVEMENT_IDS = new Set([
+  'month-full-roster-8',
+  'month-12-unlocks',
+  'month-water-12',
+]);
 
 /** Hard targets — progress counts only the active calendar month. */
 const MONTHLY_ACHIEVEMENT_DEFS: MonthlyAchievementDefinition[] = [
@@ -140,8 +148,11 @@ export function resolveMonthlyAchievements(
   dailyStepGoal: number = DEFAULT_DAILY_STEP_GOAL,
 ): ResolvedAchievement[] {
   const monthLabel = achievementMonthLabel(ctx);
+  const defs = UNLOCK_REWARDS_V2_ENABLED
+    ? MONTHLY_ACHIEVEMENT_DEFS
+    : MONTHLY_ACHIEVEMENT_DEFS.filter((def) => !V1_EXCLUDED_ACHIEVEMENT_IDS.has(def.id));
 
-  return MONTHLY_ACHIEVEMENT_DEFS.map((def) => {
+  return defs.map((def) => {
     const { current, target } = achievementProgressForDef(def, ctx, dailyStepGoal);
     const unlocked = current >= target;
     let task = def.task;
@@ -181,15 +192,9 @@ export function achievementPreview(
   dailyStepGoal: number = DEFAULT_DAILY_STEP_GOAL,
 ): ResolvedAchievement[] {
   const all = resolveMonthlyAchievements(ctx, dailyStepGoal);
-  const iconPriority: AchievementIconKind[] = [
-    'walk',
-    'streak',
-    'unlock',
-    'water',
-    'lock',
-    'goal',
-    'steps',
-  ];
+  const iconPriority: AchievementIconKind[] = UNLOCK_REWARDS_V2_ENABLED
+    ? ['walk', 'streak', 'unlock', 'water', 'lock', 'goal', 'steps']
+    : ['walk', 'streak', 'water', 'goal', 'steps'];
 
   const picked: ResolvedAchievement[] = [];
   const usedIds = new Set<string>();

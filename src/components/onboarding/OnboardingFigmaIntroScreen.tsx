@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import type { ImageSourcePropType, ImageStyle, StyleProp, ViewStyle } from 'react-native';
 import { Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import Animated, {
@@ -13,7 +14,6 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MizoraFullLogo } from '@/components/brand/MizoraFullLogo';

@@ -16,9 +16,9 @@ import { fonts } from '@/theme/tokens';
 import { legalDocumentHref } from '@/utils/legalLinks';
 
 const BULLETS = [
-  'Steps, water, streaks, and lock settings stay mainly on your device.',
-  'Optional name and health profile personalize goals — never sold.',
-  'Health and app-usage permissions are opt-in with clear explainers.',
+  'Steps, water, streaks, and goals stay on your device.',
+  'Optional name and health profile personalize targets — never sold.',
+  'Motion or Health Connect is used for steps only when you turn it on.',
   'We do not share personal data with advertisers.',
 ];
 
@@ -45,7 +45,8 @@ export function ProfilePrivacyScreen() {
           showsVerticalScrollIndicator={false}
         >
           <InsightBanner icon="shield-checkmark-outline">
-            Mizora collects the minimum needed to run challenges, unlocks, and your dashboard.
+            Mizora 1.0 collects the minimum needed to run step tracking, water logging, and your
+            dashboard on this device.
           </InsightBanner>
 
           <Card className="px-4 py-4" style={{ gap: 12 }}>

@@ -6,6 +6,7 @@ import { ForwardChevronIcon } from '@/components/icons/ForwardChevronIcon';
 import { Card } from '@/components/ui/Card';
 import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+import { useWeeklyPeakWalk } from '@/hooks/useWeeklyPeakWalk';
 import { formatWeeklyInboxStatLine, summarizeWeeklyHealth } from '@/lib/health/weeklyHealthSummary';
 import { useStepsMetricsLive } from '@/hooks/useStepsMetricsLive';
 import { useSteps } from '@/providers/StepsProvider';
@@ -23,22 +24,29 @@ export function WeeklyReportInboxCard({ onPress, read }: WeeklyReportInboxCardPr
   const badgeAppearance = read ? 'read' : 'default';
   const { snapshot, hourlySlots } = useSteps();
   const { metricsLive } = useStepsMetricsLive();
-  const { loggedMl } = useWaterIntake();
+  const { totalWeekMl } = useWaterIntake();
+  const peak = useWeeklyPeakWalk({
+    week: snapshot.week,
+    hourlySlots,
+    metricsLive,
+  });
 
   const summary = useMemo(
-    () => (metricsLive ? summarizeWeeklyHealth(snapshot.week, loggedMl, hourlySlots) : null),
-    [metricsLive, snapshot.week, loggedMl, hourlySlots],
+    () => summarizeWeeklyHealth(snapshot.week, totalWeekMl, peak),
+    [snapshot.week, totalWeekMl, peak],
   );
 
   const subtitle = UNLOCK_REWARDS_V2_ENABLED
     ? 'Your week in Mizora — steps, unlocks, and screen time saved.'
-    : 'Steps, water, active calories, and when you walked most this week.';
+    : 'Steps, water, estimated active calories, and peak walk timing this week.';
 
   const statLine = UNLOCK_REWARDS_V2_ENABLED
     ? '1.6 hrs saved · 11.4K unlock steps'
-    : metricsLive && summary
+    : metricsLive
       ? formatWeeklyInboxStatLine(summary)
-      : 'Connect step tracking for weekly steps & calories';
+      : totalWeekMl > 0
+        ? `${summary.totalWaterMl >= 1000 ? `${(summary.totalWaterMl / 1000).toFixed(1)} L` : `${summary.totalWaterMl} ml`} water logged · connect steps for full report`
+        : 'Connect step tracking for weekly steps & calories';
 
   const badgeKind = UNLOCK_REWARDS_V2_ENABLED ? 'unlock' : 'steps';
 
@@ -107,10 +115,7 @@ export function WeeklyReportInboxCard({ onPress, read }: WeeklyReportInboxCardPr
               >
                 {statLine}
               </Text>
-              {!UNLOCK_REWARDS_V2_ENABLED &&
-              metricsLive &&
-              summary &&
-              summary.peakWalkWindow !== 'No Activity' ? (
+              {!UNLOCK_REWARDS_V2_ENABLED && metricsLive && summary.peakWalkWindow ? (
                 <Text
                   numberOfLines={2}
                   style={{

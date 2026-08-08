@@ -28,6 +28,7 @@ import {
   savePersonalizationPrefs,
   type PersonalizationPrefs,
 } from '@/lib/personalization/preferences-storage';
+import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { useSteps } from '@/providers/StepsProvider';
 import { useUnlockRewards } from '@/providers/UnlockRewardsProvider';
 import { useWaterIntake } from '@/providers/WaterIntakeProvider';
@@ -95,12 +96,12 @@ export function PersonalizationProvider({ children }: { children: ReactNode }) {
       stepGoal,
       waterLoggedMl: loggedMl,
       waterGoalMl,
-      unlockApps: apps,
+      unlockApps: UNLOCK_REWARDS_V2_ENABLED ? apps : [],
     });
   }, [prefs.homeInsightsEnabled, status, todaySteps, stepGoal, loggedMl, waterGoalMl, apps]);
 
   const lockSuggestions = useMemo((): LockSuggestion[] => {
-    if (!prefs.lockSuggestionsEnabled) return [];
+    if (!UNLOCK_REWARDS_V2_ENABLED || !prefs.lockSuggestionsEnabled) return [];
     return buildLockSuggestions(configs);
   }, [prefs.lockSuggestionsEnabled, configs]);
 

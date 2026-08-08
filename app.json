@@ -12,7 +12,7 @@
       "bundleIdentifier": "app.mizora.mobile",
       "appleTeamId": "XWG4778372",
       "infoPlist": {
-        "NSMotionUsageDescription": "Mizora counts your steps from motion data to track daily goals and unlock challenges."
+        "NSMotionUsageDescription": "Mizora uses Motion & Fitness to count your steps for daily goals, streaks, and activity summaries."
       }
     },
     "android": {

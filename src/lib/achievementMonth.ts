@@ -93,8 +93,8 @@ export function monthlyChallengeTheme(ctx: AchievementMonthContext = activeAchie
 } {
   const themes = [
     { tag: 'Endurance', blurb: 'Long walks and steady streaks this month.' },
-    { tag: 'Discipline', blurb: 'Lock apps, finish challenges, stay consistent.' },
-    { tag: 'Balance', blurb: 'Steps, water, and earned unlocks together.' },
+    { tag: 'Discipline', blurb: 'Hit your step goal on more days this month.' },
+    { tag: 'Balance', blurb: 'Steps, water, and consistency together.' },
   ];
   const index = (ctx.year * 12 + ctx.month - 1) % themes.length;
   return themes[index] ?? themes[0];

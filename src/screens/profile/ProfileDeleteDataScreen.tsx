@@ -81,7 +81,8 @@ export function ProfileDeleteDataScreen() {
                   lineHeight: 20,
                 }}
               >
-                Mizora stays installed. App Lock and challenge data are not fully reset in V1.
+                Mizora stays installed. Step history, water logs, and streak data may remain until
+                you reinstall the app.
               </Text>
               <ProfilePrimaryButton
                 label={busy ? 'Deleting…' : 'Delete my data'}

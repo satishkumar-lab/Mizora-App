@@ -42,3 +42,8 @@ export async function completeOnboarding(profile: OnboardingProfile = {}): Promi
 export async function resetOnboardingForDev(): Promise<void> {
   await AsyncStorage.multiRemove([KEYS.complete, KEYS.displayName, KEYS.flowVersion]);
 }
+
+/** Profile log out — show onboarding again; keeps step/water logs on device. */
+export async function logoutToOnboarding(): Promise<void> {
+  await AsyncStorage.multiRemove([KEYS.complete, KEYS.flowVersion]);
+}

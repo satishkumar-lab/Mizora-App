@@ -14,23 +14,23 @@ export type LegalDocument = {
 export const PRIVACY_POLICY: LegalDocument = {
   id: 'privacy',
   title: 'Privacy Policy',
-  lastUpdated: 'August 4, 2026',
+  lastUpdated: 'August 8, 2026',
   intro:
-    'Mizora (“we”, “our”, “us”) respects your privacy. This policy explains what we collect, why we collect it, and the choices you have when you use the Mizora mobile app.',
+    'Mizora (“we”, “our”, “us”) respects your privacy. This policy explains what we collect, why we collect it, and the choices you have when you use the Mizora mobile app (Version 1).',
   sections: [
     {
       heading: 'Information we collect',
       paragraphs: [
-        'Health and activity data you choose to connect (such as step counts) to power goals, charts, and unlock rules.',
-        'App preferences you set in Mizora: daily goals, blocked apps, lock rules, notification settings, and streak progress — stored primarily on your device.',
-        'Optional profile details you enter (such as display name, avatar preset, weight, or activity level) to personalize water and fitness targets.',
-        'Basic diagnostic data if you contact support (device model, app version) so we can help you faster.',
+        'Health and activity data you choose to connect (such as step counts from Motion or Health Connect) to power goals, charts, and streaks.',
+        'App preferences you set in Mizora: daily step and water goals, notification preferences, streak progress, and dashboard settings — stored primarily on your device.',
+        'Optional profile details you enter (such as display name, weight, height, or activity level) to personalize water and step recommendations.',
+        'Basic diagnostic information if you contact support (device model, app version) so we can help you faster.',
       ],
     },
     {
       heading: 'How we use information',
       paragraphs: [
-        'To run core features: habit tracking, app lock, unlock timers, reminders, and your dashboard.',
+        'To run Mizora 1.0 features: step and water tracking, calorie estimates from steps, streaks, and your dashboard.',
         'To improve reliability and fix bugs — not to sell personal data or show third-party ads.',
         'We do not use your health data for advertising profiles.',
       ],
@@ -38,14 +38,15 @@ export const PRIVACY_POLICY: LegalDocument = {
     {
       heading: 'Permissions',
       paragraphs: [
-        'Motion / Health, notifications, and app-usage access are requested only when a feature needs them. You can change or revoke permissions in your phone settings at any time.',
-        'If you deny a permission, related features may be limited but the rest of Mizora can still work where possible.',
+        'Motion (iOS) or Health Connect (Android) is used for step tracking when you allow it. You can change or revoke access in your phone settings at any time.',
+        'If you deny step access, step-related features are limited; water logging and goals on this device still work.',
+        'Mizora 1.0 does not require app-usage or screen-time permissions.',
       ],
     },
     {
       heading: 'Storage and retention',
       paragraphs: [
-        'Most Mizora data stays on your device. If you use Delete data on this device in Profile, locally stored progress and settings tied to that action are removed from the app.',
+        'Most Mizora data stays on your device. Delete data on this device in Profile removes certain profile and preference fields as described in the app.',
         'Support emails are kept only as long as needed to resolve your request.',
       ],
     },
@@ -66,7 +67,7 @@ export const PRIVACY_POLICY: LegalDocument = {
       heading: 'Your choices',
       paragraphs: [
         'Update or clear profile and health fields in Profile.',
-        'Control notifications under Profile → Notifications.',
+        'Control saved notification preferences under Profile → Notifications (delivery may arrive in a future app update).',
         'Read Privacy & data in the app for a plain-language summary of what Mizora stores.',
         'Email us at support@mizora.app for access, correction, or deletion questions.',
       ],
@@ -87,29 +88,22 @@ export const PRIVACY_POLICY: LegalDocument = {
 export const TERMS_OF_SERVICE: LegalDocument = {
   id: 'terms',
   title: 'Terms of Service',
-  lastUpdated: 'August 4, 2026',
+  lastUpdated: 'August 8, 2026',
   intro:
     'These Terms govern your use of the Mizora app. By using Mizora, you agree to these Terms. If you do not agree, please do not use the app.',
   sections: [
     {
       heading: 'The service',
       paragraphs: [
-        'Mizora helps you build healthy habits by linking optional app lock rules to goals you choose (such as steps or water intake).',
-        'Mizora is not medical advice. Always consult a qualified professional for health decisions.',
+        'Mizora 1.0 helps you build healthy habits by tracking steps, water intake, streaks, and related goals on your device.',
+        'Mizora is not medical advice. Calorie estimates and activity summaries are for general wellness only. Consult a qualified professional for health decisions.',
       ],
     },
     {
-      heading: 'Your account and device',
+      heading: 'Your device',
       paragraphs: [
-        'You are responsible for your device, lock settings, and any apps you choose to block or unlock.',
-        'You must comply with applicable laws and the terms of apps and platforms you use alongside Mizora.',
-      ],
-    },
-    {
-      heading: 'App lock and unlock',
-      paragraphs: [
-        'Lock and unlock behavior depends on your OS, permissions, and device manufacturer. Mizora cannot guarantee that every distracting app will be blocked in all circumstances.',
-        'Do not use Mizora in situations where missing a notification or call could cause harm (for example, while driving or operating machinery).',
+        'You are responsible for your device, permissions, and how you use Mizora alongside other apps.',
+        'You must comply with applicable laws and the terms of platforms you use alongside Mizora.',
       ],
     },
     {

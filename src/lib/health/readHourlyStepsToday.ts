@@ -4,15 +4,24 @@ import { Platform } from 'react-native';
 import { HOURLY_STEP_SLOTS } from '@/constants/hourlySteps';
 import { readHourlyStepsTodayFromHealthConnect } from '@/lib/health/healthConnectSteps';
 import { localDayRange } from '@/lib/health/readTodaySteps';
+import { localTodayDateKey } from '@/lib/localDate';
 
 export type ReadHourlyStepsResult =
   { ok: true; buckets: number[] } | { ok: false; reason: 'unavailable' | 'error' };
 
+export function dateFromLocalDateKey(dateKey: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!match) {
+    return new Date();
+  }
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0, 0);
+}
+
 /**
- * Authoritative per-hour steps for the local calendar day via Core Motion.
- * One query per hour that has started (future hours return 0 without querying).
+ * Per-hour steps for the local calendar day containing `now`.
+ * Future hours within that day return 0 without querying.
  */
-export async function readHourlyStepsToday(now = new Date()): Promise<ReadHourlyStepsResult> {
+export async function readHourlyStepsForDay(now: Date): Promise<ReadHourlyStepsResult> {
   if (Platform.OS === 'android') {
     return readHourlyStepsTodayFromHealthConnect(now);
   }
@@ -47,4 +56,24 @@ export async function readHourlyStepsToday(now = new Date()): Promise<ReadHourly
   } catch {
     return { ok: false, reason: 'error' };
   }
+}
+
+/** Hourly buckets for a stored `YYYY-MM-DD` key (full past days, partial today). */
+export async function readHourlyStepsForDateKey(dateKey: string): Promise<ReadHourlyStepsResult> {
+  const todayKey = localTodayDateKey();
+  if (dateKey === todayKey) {
+    return readHourlyStepsForDay(new Date());
+  }
+  const dayAnchor = dateFromLocalDateKey(dateKey);
+  const endOfDay = new Date(dayAnchor);
+  endOfDay.setHours(23, 59, 59, 999);
+  return readHourlyStepsForDay(endOfDay);
+}
+
+/**
+ * Authoritative per-hour steps for the local calendar day via Core Motion.
+ * One query per hour that has started (future hours return 0 without querying).
+ */
+export async function readHourlyStepsToday(now = new Date()): Promise<ReadHourlyStepsResult> {
+  return readHourlyStepsForDay(now);
 }

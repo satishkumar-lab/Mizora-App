@@ -3,7 +3,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { MizoraSwitch } from '@/components/unlock/MizoraSwitch';
-import { SettingsGroupDivider } from '@/components/settings/SettingsGroupDivider';
 import { SettingsRow, SettingsSection } from '@/components/settings/SettingsRow';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ThemedScreen } from '@/components/ui/ThemedScreen';
@@ -60,34 +59,16 @@ export function ProfilePersonalizationScreen() {
           showsVerticalScrollIndicator={false}
         >
           <InsightBanner icon="sparkles-outline">
-            Mizora learns from your steps, water, and unlocks on this device. You approve every lock
-            and goal — nothing changes automatically.
+            Tips are generated on your phone from steps and water — nothing is sent to the cloud.
           </InsightBanner>
 
           {ready ? (
-            <SettingsSection
-              title="Smart suggestions"
-              footer="Cloud AI may come later; today everything runs locally on your phone."
-            >
+            <SettingsSection title="Home" footer="Turn off if you prefer a quieter dashboard.">
               <PrefToggle
                 label="Daily insight on Home"
                 subtitle="One encouraging tip from your recent activity"
                 value={prefs.homeInsightsEnabled}
                 onValueChange={(v) => setPrefs({ homeInsightsEnabled: v })}
-              />
-              <SettingsGroupDivider />
-              <PrefToggle
-                label="Unlock goal suggestions"
-                subtitle="Recommended step and water targets per app"
-                value={prefs.smartUnlockGoalsEnabled}
-                onValueChange={(v) => setPrefs({ smartUnlockGoalsEnabled: v })}
-              />
-              <SettingsGroupDivider />
-              <PrefToggle
-                label="Apps to lock"
-                subtitle="When Screen Time is unavailable"
-                value={prefs.lockSuggestionsEnabled}
-                onValueChange={(v) => setPrefs({ lockSuggestionsEnabled: v })}
                 isLast
               />
             </SettingsSection>

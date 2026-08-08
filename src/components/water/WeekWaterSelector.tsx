@@ -9,7 +9,7 @@ import {
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Polyline, Stop } from 'react-native-svg';
 
 import { CalendarDayPill, type CalendarDayPillVariant } from '@/components/ui/CalendarDayPill';
-import { WATER_TODAY, waterMlFromGlasses } from '@/constants/waterToday';
+import { WATER_TODAY } from '@/constants/waterToday';
 import { WATER_VISUAL } from '@/constants/waterTheme';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { useWaterIntake } from '@/providers/WaterIntakeProvider';
@@ -19,8 +19,16 @@ import { fonts } from '@/theme/tokens';
 const CHART_HEIGHT = 120;
 const PADDING_X = 4;
 const PADDING_Y = 14;
+const ML_PER_GLASS = WATER_TODAY.mlPerGlass;
 
-type WeekDay = (typeof WATER_TODAY.week)[number];
+type WeekDay = {
+  weekday: string;
+  day: string;
+  isToday: boolean;
+  ml: number;
+  glasses: number;
+  streak?: boolean;
+};
 
 function pillVariant(index: number, selectedIndex: number, day: WeekDay): CalendarDayPillVariant {
   if (index === selectedIndex) return 'active';
@@ -37,24 +45,28 @@ function indexFromX(x: number, width: number, count: number): number {
 
 export function WeekWaterSelector() {
   const { colors, isDark } = useMizoraTheme();
-  const { loggedMl } = useWaterIntake();
+  const { rollingWeek } = useWaterIntake();
   const gridLine = chartGridLineStyle(isDark, colors);
-  const todayGlasses = Math.round(loggedMl / WATER_TODAY.mlPerGlass);
   const week = useMemo(
-    () => WATER_TODAY.week.map((day) => (day.isToday ? { ...day, glasses: todayGlasses } : day)),
-    [todayGlasses],
+    (): WeekDay[] =>
+      rollingWeek.map((day) => ({
+        weekday: day.weekday,
+        day: day.day,
+        isToday: day.isToday,
+        ml: day.ml,
+        glasses: ML_PER_GLASS > 0 ? Math.round(day.ml / ML_PER_GLASS) : 0,
+      })),
+    [rollingWeek],
   );
-  const defaultIndex = Math.max(
+  const todayIndex = Math.max(
     0,
     week.findIndex((d) => d.isToday),
   );
-  const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
+  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
+  const selectedIndex = pinnedIndex ?? todayIndex;
   const [width, setWidth] = useState(0);
 
-  const weekMl = useMemo(
-    () => week.map((d) => ({ ...d, ml: waterMlFromGlasses(d.glasses) })),
-    [week],
-  );
+  const weekMl = week;
 
   const selected = weekMl[selectedIndex] ?? weekMl[0];
   const maxMl = useMemo(() => Math.max(...weekMl.map((d) => d.ml), 1), [weekMl]);
@@ -95,10 +107,10 @@ export function WeekWaterSelector() {
         onMoveShouldSetPanResponder: () => true,
         onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: (evt: GestureResponderEvent) => {
-          setSelectedIndex(indexFromX(evt.nativeEvent.locationX, width, week.length));
+          setPinnedIndex(indexFromX(evt.nativeEvent.locationX, width, week.length));
         },
         onPanResponderMove: (evt: GestureResponderEvent) => {
-          setSelectedIndex(indexFromX(evt.nativeEvent.locationX, width, week.length));
+          setPinnedIndex(indexFromX(evt.nativeEvent.locationX, width, week.length));
         },
       }),
     [width, week.length],
@@ -121,7 +133,7 @@ export function WeekWaterSelector() {
               variant: pillVariant(index, selectedIndex, day),
               streak: 'streak' in day ? day.streak : false,
             }}
-            onPress={() => setSelectedIndex(index)}
+            onPress={() => setPinnedIndex(index)}
           />
         ))}
       </View>

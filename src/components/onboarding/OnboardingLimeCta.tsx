@@ -1,7 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import { FIGMA_ONBOARDING_LIME } from '@/constants/onboardingFigmaAssets';
+import {
+  FIGMA_ONBOARDING_CTA_BORDER,
+  FIGMA_ONBOARDING_CTA_FILL,
+} from '@/constants/onboardingFigmaAssets';
 import { colors, fonts } from '@/theme/tokens';
 
 /** CTA label + arrow — always #000000 (no Pressable `disabled` opacity tint). */
@@ -72,20 +75,21 @@ export function OnboardingLimeCta({
 const styles = StyleSheet.create({
   cta: {
     alignSelf: 'center',
-    backgroundColor: FIGMA_ONBOARDING_LIME,
+    backgroundColor: FIGMA_ONBOARDING_CTA_FILL,
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.95)',
+    borderColor: FIGMA_ONBOARDING_CTA_BORDER,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 4,
   },
   ctaDisabled: {
-    borderColor: 'rgba(255,255,255,0.55)',
+    backgroundColor: 'rgba(255,255,255,0.52)',
+    borderColor: 'rgba(255,255,255,0.65)',
   },
   ctaPressed: {
     transform: [{ scale: 0.97 }],

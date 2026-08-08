@@ -18,6 +18,7 @@ import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { summarizeWeeklyHealth } from '@/lib/health/weeklyHealthSummary';
 import { useStepsMetricsLive } from '@/hooks/useStepsMetricsLive';
+import { useWeeklyPeakWalk } from '@/hooks/useWeeklyPeakWalk';
 import { useSteps } from '@/providers/StepsProvider';
 import { useWaterIntake } from '@/providers/WaterIntakeProvider';
 import { mizoraCardElevationStyle } from '@/utils/platformStyles';
@@ -64,7 +65,7 @@ function WeeklyTotalsHero({
       <View className="flex-row divide-x px-2 py-4" style={{ borderColor: colors.borderDivider }}>
         {[
           { label: 'Steps', value: stepsLabel },
-          { label: 'Active kcal', value: kcalLabel },
+          { label: 'Est. active kcal', value: kcalLabel },
           { label: 'Water', value: waterLabel },
         ].map((col) => (
           <View key={col.label} className="flex-1 items-center px-2" style={{ gap: 4 }}>
@@ -85,10 +86,12 @@ function PeakWalkInsightCard({
   peakWindow,
   notificationCopy,
   bestDayLabel,
+  loading,
 }: {
-  peakWindow: string;
+  peakWindow: string | null;
   notificationCopy: string;
   bestDayLabel: string | null;
+  loading?: boolean;
 }) {
   const { colors, isDark } = useMizoraTheme();
 
@@ -100,22 +103,29 @@ function PeakWalkInsightCard({
           <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: colors.textStrong }}>
             Peak walk time
           </Text>
-          <Text
-            style={{
-              fontFamily: fonts.regular,
-              fontSize: 12,
-              color: colors.textSecondary,
-              lineHeight: 18,
-            }}
-          >
-            {notificationCopy}
-          </Text>
+          {notificationCopy ? (
+            <Text
+              style={{
+                fontFamily: fonts.regular,
+                fontSize: 12,
+                color: colors.textSecondary,
+                lineHeight: 18,
+              }}
+            >
+              {notificationCopy}
+            </Text>
+          ) : null}
+          {loading ? (
+            <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: colors.textMuted }}>
+              Analyzing hourly steps for this week…
+            </Text>
+          ) : null}
           {bestDayLabel ? (
             <Text style={{ fontFamily: fonts.medium, fontSize: 10, color: colors.textMuted }}>
               Busiest day · {bestDayLabel}
             </Text>
           ) : null}
-          {peakWindow !== 'No Activity' ? (
+          {peakWindow ? (
             <View
               className="self-start rounded-full px-2.5 py-1"
               style={{ backgroundColor: isDark ? 'rgba(212, 255, 0, 0.12)' : '#eef9dc' }}
@@ -138,27 +148,23 @@ export function WeeklyHealthReportScreen() {
   const { isDark } = useMizoraTheme();
   const { metricsLive, status, retryTracking } = useStepsMetricsLive();
   const { snapshot, hourlySlots, refresh } = useSteps();
-  const { loggedMl } = useWaterIntake();
+  const { totalWeekMl, reloadFromStorage } = useWaterIntake();
+  const peak = useWeeklyPeakWalk({
+    week: snapshot.week,
+    hourlySlots,
+    metricsLive,
+  });
 
   useFocusEffect(
     useCallback(() => {
       void refresh();
-    }, [refresh]),
+      void reloadFromStorage();
+    }, [refresh, reloadFromStorage]),
   );
 
   const summary = useMemo(
-    () =>
-      metricsLive
-        ? summarizeWeeklyHealth(snapshot.week, loggedMl, hourlySlots)
-        : {
-            totalSteps: 0,
-            totalActiveKcal: 0,
-            totalWaterMl: loggedMl,
-            peakWalkWindow: 'No Activity',
-            peakWalkNotification: '',
-            bestStepsDay: null,
-          },
-    [metricsLive, snapshot.week, loggedMl, hourlySlots],
+    () => summarizeWeeklyHealth(snapshot.week, totalWeekMl, peak),
+    [snapshot.week, totalWeekMl, peak],
   );
 
   const bestDayLabel = summary.bestStepsDay
@@ -200,6 +206,7 @@ export function WeeklyHealthReportScreen() {
             peakWindow={summary.peakWalkWindow}
             notificationCopy={summary.peakWalkNotification}
             bestDayLabel={bestDayLabel}
+            loading={peak.status === 'loading'}
           />
         ) : null}
 
@@ -221,7 +228,7 @@ export function WeeklyHealthReportScreen() {
           <Card className="gap-3 p-4" style={mizoraCardElevationStyle(isDark)}>
             <TitleSubtitleBlock
               title="Hydration"
-              subtitle="Logged glasses this week (today syncs from your tracker)."
+              subtitle="Logged intake each day this week (stored in Mizora)."
             />
             <WeekWaterSelector />
           </Card>

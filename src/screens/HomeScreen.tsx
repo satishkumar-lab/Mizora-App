@@ -5,6 +5,7 @@ import { HealthOverviewSection } from '@/components/home/HealthOverviewSection';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { UnlockRewardsSection } from '@/components/home/UnlockRewardsSection';
 import { HomeInsightBanner } from '@/components/home/HomeInsightBanner';
+import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { WorkoutCalendarSection } from '@/components/home/WorkoutCalendarSection';
 import { ThemedScreen } from '@/components/ui/ThemedScreen';
 import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
@@ -24,7 +25,7 @@ function HomeScreenContent() {
         <View className="gap-6">
           <HomeHeader />
           <HealthOverviewSection />
-          <UnlockRewardsSection />
+          {UNLOCK_REWARDS_V2_ENABLED ? <UnlockRewardsSection /> : null}
           <WorkoutCalendarSection />
           <HomeInsightBanner />
         </View>

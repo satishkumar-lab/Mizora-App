@@ -4,7 +4,7 @@ export const ONBOARDING_SPLASH_MS = 800;
 export const ONBOARDING_VALUE_COPY = {
   title: 'Less doomscroll.',
   titleAccent: 'More momentum.',
-  body: 'Steps, water, and unlocks — one calm loop.',
+  body: 'Steps, water, and streaks — one calm loop.',
 } as const;
 
 export const ONBOARDING_GOALS_RECOMMENDATION_COPY = {

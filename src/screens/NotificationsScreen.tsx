@@ -4,7 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
-import { UNLOCK_REWARDS_V2_ENABLED, weeklyReportHref } from '@/constants/productScope';
+import {
+  UNLOCK_REWARDS_V2_ENABLED,
+  WEEKLY_HEALTH_REPORT_ENABLED,
+  weeklyReportHref,
+} from '@/constants/productScope';
 import { NotificationFeedSectionCard } from '@/components/notifications/NotificationFeedSectionCard';
 import { NotificationHeaderIcon } from '@/components/notifications/NotificationHeaderIcon';
 import { WeeklyReportInboxCard } from '@/components/notifications/WeeklyReportInboxCard';
@@ -51,7 +55,6 @@ export function NotificationsScreen() {
     markRead: markDemoRead,
     isRead: isDemoRead,
     weeklyReportActive,
-    weeklyReportUnread,
     markWeeklyReportRead,
   } = useNotificationInboxForScreen();
 
@@ -60,9 +63,16 @@ export function NotificationsScreen() {
   const [localReadIds, setLocalReadIds] = useState(() => initialReadNotificationIds(feed));
   const [weeklyReportRead, setWeeklyReportRead] = useState(false);
 
-  const showWeeklyReportCard = UNLOCK_REWARDS_V2_ENABLED || (__DEV__ && weeklyReportActive);
+  const showWeeklyReportCard =
+    UNLOCK_REWARDS_V2_ENABLED || WEEKLY_HEALTH_REPORT_ENABLED || (__DEV__ && weeklyReportActive);
+  const weeklyCardRead = weeklyReportRead;
 
-  const weeklyCardRead = UNLOCK_REWARDS_V2_ENABLED ? weeklyReportRead : !weeklyReportUnread;
+  const markWeeklyCardRead = useCallback(() => {
+    setWeeklyReportRead(true);
+    if (__DEV__) {
+      markWeeklyReportRead();
+    }
+  }, [markWeeklyReportRead]);
 
   const isItemRead = useCallback(
     (id: string) => (isDemo ? isDemoRead(id) : localReadIds.has(id)),
@@ -87,13 +97,9 @@ export function NotificationsScreen() {
 
   const unreadTotal = useMemo(() => {
     const feedUnread = feed.filter((n) => n.unread && !isItemRead(n.id)).length;
-    const weeklyUnread =
-      (UNLOCK_REWARDS_V2_ENABLED && !weeklyReportRead) ||
-      (__DEV__ && weeklyReportActive && weeklyReportUnread)
-        ? 1
-        : 0;
+    const weeklyUnread = showWeeklyReportCard && !weeklyReportRead ? 1 : 0;
     return feedUnread + weeklyUnread;
-  }, [feed, isItemRead, weeklyReportActive, weeklyReportRead, weeklyReportUnread]);
+  }, [feed, isItemRead, showWeeklyReportCard, weeklyReportRead]);
 
   return (
     <>
@@ -133,17 +139,13 @@ export function NotificationsScreen() {
             <WeeklyReportInboxCard
               read={weeklyCardRead}
               onPress={() => {
-                if (UNLOCK_REWARDS_V2_ENABLED) {
-                  setWeeklyReportRead(true);
-                } else if (__DEV__) {
-                  markWeeklyReportRead();
-                }
+                markWeeklyCardRead();
                 router.push(weeklyReportHref());
               }}
             />
           ) : null}
 
-          {feed.length === 0 && !showWeeklyReportCard ? (
+          {feed.length === 0 && !isDemo && !showWeeklyReportCard ? (
             <Text
               style={{
                 fontFamily: fonts.regular,
@@ -155,8 +157,25 @@ export function NotificationsScreen() {
                 lineHeight: 20,
               }}
             >
-              No notifications yet. Reminders and unlock alerts will show up here when you earn
-              them.
+              No notifications yet. Push reminders are not available in Mizora 1.0 — track progress
+              on Home and the Steps tab.
+            </Text>
+          ) : null}
+
+          {feed.length === 0 && !isDemo && showWeeklyReportCard ? (
+            <Text
+              style={{
+                fontFamily: fonts.regular,
+                fontSize: 13,
+                color: colors.textMuted,
+                textAlign: 'center',
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                lineHeight: 20,
+              }}
+            >
+              Push reminders are not available in Mizora 1.0. Open your weekly report above when
+              available.
             </Text>
           ) : null}
 

@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
@@ -16,6 +16,7 @@ import { MAIN_TAB_BAR_CLEARANCE } from '@/constants/navigation';
 import { UNLOCK_REWARDS_V2_ENABLED } from '@/constants/productScope';
 import { useMizoraBack } from '@/hooks/useMizoraBack';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
+import { logoutToOnboarding } from '@/lib/onboarding-storage';
 import {
   ACTIVITY_LEVEL_LABEL,
   ensureMemberSince,
@@ -39,6 +40,7 @@ export function ProfileHubScreen() {
   const [displayName, setDisplayNameState] = useState('');
   const [memberLabel, setMemberLabel] = useState('');
   const [healthDetail, setHealthDetail] = useState<string | undefined>();
+  const [redirectToOnboarding, setRedirectToOnboarding] = useState(false);
 
   const reload = useCallback(async () => {
     const [name, since, health] = await Promise.all([
@@ -64,11 +66,46 @@ export function ProfileHubScreen() {
     }, [reload]),
   );
 
+  const runLogout = useCallback(async () => {
+    await logoutToOnboarding();
+    setRedirectToOnboarding(true);
+  }, []);
+
+  const confirmLogout = useCallback(() => {
+    const message =
+      'You will see the welcome and setup flow again. Step and water logs on this device stay as they are.';
+
+    if (Platform.OS === 'web') {
+      if (
+        typeof globalThis.confirm === 'function' &&
+        globalThis.confirm(`${message}\n\nLog out?`)
+      ) {
+        void runLogout();
+      }
+      return;
+    }
+
+    Alert.alert('Log out?', message, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Log out',
+        style: 'destructive',
+        onPress: () => {
+          void runLogout();
+        },
+      },
+    ]);
+  }, [runLogout]);
+
   const toggleTheme = () => {
     const next: MizoraThemeScheme = isDark ? 'light' : 'dark';
     setColorScheme(next);
     void saveMizoraTheme(next);
   };
+
+  if (redirectToOnboarding) {
+    return <Redirect href="/onboarding" />;
+  }
 
   return (
     <>
@@ -85,6 +122,7 @@ export function ProfileHubScreen() {
             gap: 22,
           }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <ProfileHeroCard
             displayName={displayName}
@@ -124,13 +162,14 @@ export function ProfileHubScreen() {
           <SettingsSection title="Preferences">
             <SettingsRow
               label="Notifications"
+              subtitle="Push reminders coming later"
               leading={<MetricBadgeIcon kind="activeTime" size={40} appearance="read" />}
               onPress={() => router.push('/profile/notifications')}
             />
             <SettingsGroupDivider />
             <SettingsRow
               label="Personalization"
-              subtitle="Insights and smart unlock suggestions"
+              subtitle="Daily insight on Home"
               leading={<MetricBadgeIcon kind="steps" size={40} />}
               onPress={() => router.push('/profile/personalization')}
             />
@@ -158,7 +197,7 @@ export function ProfileHubScreen() {
 
           <SettingsSection
             title="Permissions"
-            footer="Mizora only uses permissions you approve for steps, reminders, and app lock."
+            footer="Mizora 1.0 uses Motion or Health Connect for steps when you allow it."
           >
             <SettingsRow
               label="Manage permissions"
@@ -179,6 +218,12 @@ export function ProfileHubScreen() {
               label="Delete data on this device"
               destructive
               onPress={() => router.push('/profile/delete')}
+            />
+            <SettingsGroupDivider />
+            <SettingsRow
+              label="Log out"
+              subtitle="Show onboarding again on this device"
+              onPress={() => confirmLogout()}
               isLast
             />
           </SettingsSection>

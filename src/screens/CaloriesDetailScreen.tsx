@@ -163,7 +163,7 @@ export function CaloriesDetailScreen() {
                     marginTop: 1,
                   }}
                 >
-                  Unlocks & daily goal
+                  Daily goal & charts
                 </Text>
               </View>
             </View>

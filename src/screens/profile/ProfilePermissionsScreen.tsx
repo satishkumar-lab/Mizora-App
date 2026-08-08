@@ -20,15 +20,9 @@ import { openSystemSettings } from '@/utils/legalLinks';
 const PERMISSION_ROWS = [
   {
     label: 'Health & motion',
-    subtitle: 'Steps for challenges and dashboard',
+    subtitle: 'Steps for your dashboard, streaks, and weekly summary',
     kind: 'steps' as const,
   },
-  {
-    label: 'Notifications',
-    subtitle: 'Streaks, unlocks, and walk nudges',
-    kind: 'activeTime' as const,
-  },
-  { label: 'App usage', subtitle: 'Screen time and lock recommendations', kind: 'unlock' as const },
 ];
 
 export function ProfilePermissionsScreen() {
@@ -53,11 +47,11 @@ export function ProfilePermissionsScreen() {
           showsVerticalScrollIndicator={false}
         >
           <InsightBanner icon="settings-outline">
-            Your phone controls access. Open system settings to allow or revoke permissions for
-            Mizora.
+            Your phone controls access. Open system settings to allow or revoke Motion (iPhone) or
+            Health Connect (Android) for step tracking.
           </InsightBanner>
 
-          <SettingsSection title="What Mizora may use">
+          <SettingsSection title="What Mizora 1.0 uses">
             {PERMISSION_ROWS.map((row, index) => (
               <View key={row.label}>
                 {index > 0 ? <SettingsGroupDivider /> : null}
