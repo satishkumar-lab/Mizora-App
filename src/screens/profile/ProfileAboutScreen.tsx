@@ -44,23 +44,23 @@ export function ProfileAboutScreen() {
           showsVerticalScrollIndicator={false}
         >
           <InsightBanner icon="heart-outline">
-            Earn screen time with steps, water, and streaks — habits over punishment.
+            Build momentum with steps, water, and streaks — small wins that add up.
           </InsightBanner>
 
           <SettingsSection title="About Mizora">
             <SettingsTextBlock
               title="Why we built Mizora"
-              body="Mizora helps you enjoy the apps you love without letting them run your day. Instead of harsh blocks or guilt, you choose healthy challenges — walk more, drink water, keep streaks — and earn unlock time when you show up for yourself."
+              body="Mizora helps you stay on top of daily movement and hydration without guilt or shame. Set simple goals, see your progress on a clear dashboard, and keep streaks going when you show up for yourself."
             />
             <SettingsGroupDivider />
             <SettingsTextBlock
               title="How it works"
-              body="Pick apps to lock, set daily goals, and complete Lock Challenge targets to earn access. Your dashboard, streaks, and rewards stay focused on small wins that compound into real routines."
+              body="Set your step and water targets, log progress through the day, and watch streaks and summaries reflect what you actually did. Health Overview ties it together so you always know where you stand."
             />
             <SettingsGroupDivider />
             <SettingsTextBlock
               title="Version 1"
-              body="This release is free and polished around the core loop: track habits, unlock intentionally, and build momentum. We are starting in English for India and will expand features based on what helps you most."
+              body="This release is free and focused on the essentials: steps, water, streaks, and your weekly health report. We are starting in English for India and will expand based on what helps you most."
             />
             <SettingsGroupDivider />
             <SettingsTextBlock

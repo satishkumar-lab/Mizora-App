@@ -1,7 +1,6 @@
 import type { AppBrandId } from '@/components/icons/AppBrandIcon';
 import type { RewardAppItem } from '@/constants/unlockRewards';
 import { isStreakDayComplete } from '@/lib/streakCalendar';
-import { DEFAULT_DAILY_STEP_GOAL } from '@/lib/steps-preferences';
 import { formatStepShort } from '@/constants/unlockRewards';
 
 export type HomeInsightSegment = {
@@ -41,24 +40,7 @@ type HomeInsightInput = {
   unlockApps: RewardAppItem[];
 };
 
-function closestUnlockApp(apps: RewardAppItem[]): RewardAppItem | undefined {
-  let best: RewardAppItem | undefined;
-  let bestRatio = -1;
-  for (const app of apps) {
-    if (app.unlocked || app.goalComplete) continue;
-    const ratio =
-      app.challenge.kind === 'steps'
-        ? app.challenge.earnedSteps / Math.max(app.challenge.goalSteps, 1)
-        : app.challenge.currentMl / Math.max(app.challenge.goalMl, 1);
-    if (ratio > bestRatio) {
-      bestRatio = ratio;
-      best = app;
-    }
-  }
-  return best;
-}
-
-/** Water-only or access nudge — no step counts when live tracking is off. */
+/** Water-only nudge — no step counts when live tracking is off. */
 export function buildHomeInsightWithoutLiveSteps(input: {
   waterLoggedMl: number;
   waterGoalMl: number;
@@ -82,36 +64,7 @@ export function buildHomeInsightWithoutLiveSteps(input: {
 
 /** On-device insight — no medical claims; user can turn off in settings. */
 export function buildHomeInsight(input: HomeInsightInput): HomeInsightSegment {
-  const { todaySteps, stepGoal, waterLoggedMl, waterGoalMl, unlockApps } = input;
-
-  const unlockCandidate = closestUnlockApp(unlockApps);
-  if (unlockCandidate && unlockCandidate.challenge.kind === 'steps') {
-    const left = Math.max(
-      0,
-      unlockCandidate.challenge.goalSteps - unlockCandidate.challenge.earnedSteps,
-    );
-    if (left > 0 && left <= unlockCandidate.challenge.goalSteps * 0.4) {
-      return {
-        before: `About `,
-        emphasis: formatStepShort(left),
-        after: ` steps left to unlock ${unlockCandidate.name} — you've got this.`,
-      };
-    }
-  }
-
-  if (unlockCandidate && unlockCandidate.challenge.kind === 'water') {
-    const left = Math.max(
-      0,
-      unlockCandidate.challenge.goalMl - unlockCandidate.challenge.currentMl,
-    );
-    if (left > 0 && left <= unlockCandidate.challenge.goalMl * 0.4) {
-      return {
-        before: `Log `,
-        emphasis: `${left} ml`,
-        after: ` more water to unlock ${unlockCandidate.name}.`,
-      };
-    }
-  }
+  const { todaySteps, stepGoal, waterLoggedMl, waterGoalMl } = input;
 
   const stepPct = stepGoal > 0 ? todaySteps / stepGoal : 0;
   if (stepPct >= 0.75 && stepPct < 1) {
@@ -127,7 +80,7 @@ export function buildHomeInsight(input: HomeInsightInput): HomeInsightSegment {
     return {
       before: `Daily step goal hit — `,
       emphasis: 'nice work',
-      after: '. Keep momentum or treat yourself to an earned unlock.',
+      after: '. Keep the momentum going today.',
     };
   }
 
@@ -153,17 +106,9 @@ export function buildHomeInsight(input: HomeInsightInput): HomeInsightSegment {
     };
   }
 
-  if (unlockApps.length === 0) {
-    return {
-      before: `Try locking one app with a `,
-      emphasis: 'small challenge',
-      after: ' — you choose the goal, Mizora keeps it fair.',
-    };
-  }
-
   return {
     before: `Small walks add up — `,
     emphasis: 'even 500 steps',
-    after: ' toward an unlock beats endless scrolling.',
+    after: ' today still moves you forward.',
   };
 }

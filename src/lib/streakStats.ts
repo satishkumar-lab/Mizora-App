@@ -1,4 +1,5 @@
 import type { MetricBadgeKind } from '@/components/icons/MetricBadgeIcon';
+import { activeCaloriesFromSteps } from '@/lib/calories-estimate';
 import {
   estimateActiveMinutesFromSteps,
   estimateDistanceKmFromSteps,
@@ -24,6 +25,31 @@ const MOCK_PERSONAL_RECORDS: Omit<StreakPersonalRecord, 'value'>[] = [
 export function computeMaxStepsInHistory(): number {
   const historyValues = Object.values(getStepsHistory());
   return Math.max(0, ...historyValues, getTodayStepsLive());
+}
+
+function computeHistoricalPersonalRecordMaxima(): {
+  maxSteps: number;
+  maxActiveMinutes: number;
+  maxDistanceKm: number;
+  maxCalories: number;
+} {
+  const history = getStepsHistory();
+  const stepCounts = [...Object.values(history), getTodayStepsLive()];
+
+  let maxSteps = 0;
+  let maxActiveMinutes = 0;
+  let maxDistanceKm = 0;
+  let maxCalories = 0;
+
+  for (const steps of stepCounts) {
+    if (steps <= 0) continue;
+    maxSteps = Math.max(maxSteps, steps);
+    maxActiveMinutes = Math.max(maxActiveMinutes, estimateActiveMinutesFromSteps(steps));
+    maxDistanceKm = Math.max(maxDistanceKm, estimateDistanceKmFromSteps(steps));
+    maxCalories = Math.max(maxCalories, activeCaloriesFromSteps(steps));
+  }
+
+  return { maxSteps, maxActiveMinutes, maxDistanceKm, maxCalories };
 }
 
 export function computeLongestStreakAllTime(goal: number = DEFAULT_DAILY_STEP_GOAL): number {
@@ -74,13 +100,14 @@ export function buildPersonalRecords(metricsLive = true): StreakPersonalRecord[]
     }));
   }
 
-  const maxSteps = computeMaxStepsInHistory();
+  const { maxSteps, maxActiveMinutes, maxDistanceKm, maxCalories } =
+    computeHistoricalPersonalRecordMaxima();
 
   const values: Record<string, string> = {
     steps: `${maxSteps.toLocaleString()} steps`,
-    time: formatActiveTime(estimateActiveMinutesFromSteps(getTodayStepsLive())),
-    distance: `${estimateDistanceKmFromSteps(getTodayStepsLive()).toFixed(1)} km`,
-    calories: `${Math.round(maxSteps * 0.04).toLocaleString()} kcal`,
+    time: formatActiveTime(maxActiveMinutes),
+    distance: `${maxDistanceKm.toFixed(1)} km`,
+    calories: `${maxCalories.toLocaleString()} kcal`,
   };
 
   return MOCK_PERSONAL_RECORDS.map((row) => ({
