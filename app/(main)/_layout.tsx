@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MainNav } from '@/components/home/MainNav';
+import { AndroidStepTrackingSetupSheet } from '@/components/steps/AndroidStepTrackingSetupSheet';
 import { getOnboardingComplete } from '@/lib/onboarding-storage';
 import { UnlockRewardsProvider } from '@/providers/UnlockRewardsProvider';
 import { PersonalizationProvider } from '@/providers/PersonalizationProvider';
@@ -91,6 +92,7 @@ export default function MainAppLayout() {
                   <MainNav />
                 </View>
               )}
+              <AndroidStepTrackingSetupSheet />
             </View>
           </PersonalizationProvider>
         </UnlockRewardsProvider>

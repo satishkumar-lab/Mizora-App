@@ -3,7 +3,15 @@ import { Platform } from 'react-native';
 
 import { readTodayStepsFromHealthConnect } from '@/lib/health/healthConnectSteps';
 
-export type StepsReadFailure = 'unavailable' | 'denied' | 'error' | 'pending';
+export type StepsReadFailure =
+  | 'unavailable'
+  | 'denied'
+  | 'error'
+  | 'pending'
+  /** Health Connect app not installed (SDK_UNAVAILABLE). */
+  | 'provider_install'
+  /** Health Connect installed but must be updated (SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED). */
+  | 'provider_update';
 
 export type StepsTrackingStatus = 'loading' | 'ready' | StepsReadFailure;
 

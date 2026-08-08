@@ -7,12 +7,28 @@ export function isStepsTrackingReady(status: StepsTrackingStatus): boolean {
 }
 
 export function isStepsTrackingLoading(status: StepsTrackingStatus): boolean {
-  return status === 'loading';
+  return status === 'loading' || status === 'pending';
 }
 
 export function isStepsTrackingBlocked(status: StepsTrackingStatus): boolean {
   return (
-    status === 'pending' || status === 'denied' || status === 'unavailable' || status === 'error'
+    status === 'pending' ||
+    status === 'denied' ||
+    status === 'unavailable' ||
+    status === 'error' ||
+    status === 'provider_install' ||
+    status === 'provider_update'
+  );
+}
+
+/** Home: permission card only after the user explicitly denied step tracking. */
+export function shouldShowHomeStepsPermissionCard(status: StepsTrackingStatus): boolean {
+  return status === 'denied';
+}
+
+export function isAndroidStepProviderSetupStatus(status: StepsTrackingStatus): boolean {
+  return (
+    Platform.OS === 'android' && (status === 'provider_install' || status === 'provider_update')
   );
 }
 
@@ -33,9 +49,9 @@ function iosPendingCopy(): StepsPermissionUiCopy {
 
 function androidPendingCopy(): StepsPermissionUiCopy {
   return {
-    title: 'Connect your steps',
-    body: 'Link Health Connect so Mizora can reflect today’s steps on your dashboard. You choose what to share, and you can disconnect anytime.',
-    primaryLabel: 'Connect Health Connect',
+    title: 'Allow step tracking',
+    body: 'Mizora reads today’s step count to power your dashboard, streaks, and goals. You choose what to share and can turn this off anytime.',
+    primaryLabel: 'Allow step tracking',
   };
 }
 
@@ -50,9 +66,9 @@ function iosDeniedCopy(): StepsPermissionUiCopy {
 
 function androidDeniedCopy(): StepsPermissionUiCopy {
   return {
-    title: 'Health Connect access is off',
-    body: 'We can’t read steps until Health Connect allows Mizora. Your other progress on this device is unchanged—restore access in a few taps.',
-    primaryLabel: 'Try again',
+    title: 'Step tracking is off',
+    body: 'Live steps and streaks are paused. Your water log and goals on this device are unchanged—you can enable tracking again in a few taps.',
+    primaryLabel: 'Enable step tracking',
     secondaryLabel: 'Open Settings',
   };
 }
@@ -67,9 +83,27 @@ function iosUnavailableCopy(): StepsPermissionUiCopy {
 
 function androidUnavailableCopy(): StepsPermissionUiCopy {
   return {
-    title: 'Health Connect isn’t available',
-    body: 'Install or update Health Connect to sync steps with Mizora. Until then, water tracking and your goals still work beautifully.',
+    title: 'Step tracking isn’t supported',
+    body: 'This device can’t sync steps with Mizora yet. Water tracking and your goals still work on this phone.',
     primaryLabel: 'Open Settings',
+  };
+}
+
+function androidProviderInstallCopy(): StepsPermissionUiCopy {
+  return {
+    title: 'Finish step tracking setup',
+    body: 'One quick Play Store step completes setup on this phone. When you return, Mizora continues automatically—no extra taps on Home.',
+    primaryLabel: 'Continue',
+    secondaryLabel: 'Not now',
+  };
+}
+
+function androidProviderUpdateCopy(): StepsPermissionUiCopy {
+  return {
+    title: 'Finish step tracking setup',
+    body: 'A short update in the Play Store is needed to keep reading steps on this device. Come back here when it’s done.',
+    primaryLabel: 'Update & continue',
+    secondaryLabel: 'Not now',
   };
 }
 
@@ -77,7 +111,7 @@ export function stepsPermissionUiCopy(status: StepsTrackingStatus): StepsPermiss
   if (status === 'loading') {
     return {
       title: 'Syncing your steps',
-      body: 'One moment—we’re connecting to your step counter and refreshing today’s totals.',
+      body: 'One moment—we’re refreshing today’s step count.',
       primaryLabel: 'Please wait',
     };
   }
@@ -90,13 +124,21 @@ export function stepsPermissionUiCopy(status: StepsTrackingStatus): StepsPermiss
     return Platform.OS === 'android' ? androidDeniedCopy() : iosDeniedCopy();
   }
 
+  if (status === 'provider_install') {
+    return androidProviderInstallCopy();
+  }
+
+  if (status === 'provider_update') {
+    return androidProviderUpdateCopy();
+  }
+
   if (status === 'unavailable') {
     return Platform.OS === 'android' ? androidUnavailableCopy() : iosUnavailableCopy();
   }
 
   return {
     title: 'Couldn’t refresh steps',
-    body: 'A small connection hiccup—nothing was lost. Give it another try; we’ll pick up right where you left off.',
+    body: 'Nothing was lost on this device. Try again and we’ll pick up where you left off.',
     primaryLabel: 'Try again',
     secondaryLabel: 'Open Settings',
   };
@@ -112,14 +154,14 @@ export function liveBadgePresentation(status: StepsTrackingStatus): LiveBadgePre
   if (status === 'ready') {
     return { label: 'Live', showPulse: true, tone: 'live' };
   }
-  if (status === 'loading') {
+  if (status === 'loading' || status === 'pending') {
     return { label: 'Syncing', showPulse: false, tone: 'sync' };
-  }
-  if (status === 'pending') {
-    return { label: 'Setup', showPulse: false, tone: 'off' };
   }
   if (status === 'denied') {
     return { label: 'Off', showPulse: false, tone: 'off' };
+  }
+  if (status === 'provider_install' || status === 'provider_update') {
+    return { label: 'Setup', showPulse: false, tone: 'off' };
   }
   if (status === 'unavailable') {
     return { label: 'Unsupported', showPulse: false, tone: 'off' };

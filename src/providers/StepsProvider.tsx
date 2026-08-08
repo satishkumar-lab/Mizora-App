@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import {
   buildStepsWeek,
@@ -32,6 +32,11 @@ import {
   DEFAULT_DAILY_STEP_GOAL,
 } from '@/lib/steps-preferences';
 import { resetHealthConnectInitCache } from '@/lib/health/healthConnectSteps';
+import { logAndroidHealthDebug } from '@/lib/health/androidHealthDebugLog';
+import {
+  openHealthConnectInPlayStore,
+  openHealthConnectInstallOnce,
+} from '@/lib/health/androidHealthConnectInstall';
 import {
   setRequestStepPermissionOnNextSync,
   consumeRequestStepPermissionOnNextSync,
@@ -47,6 +52,7 @@ type StepsContextValue = {
   status: StepsTrackingStatus;
   refresh: () => Promise<void>;
   retryTracking: () => Promise<void>;
+  runStepsSetupAction: () => Promise<void>;
 };
 
 const StepsContext = createContext<StepsContextValue | null>(null);
@@ -103,6 +109,12 @@ export function StepsProvider({ children }: { children: ReactNode }) {
   const historyRef = useRef(history);
   const todayStepsRef = useRef(todaySteps);
   const liveSyncRef = useRef<(() => Promise<void>) | null>(null);
+  const awaitingHealthConnectReturnRef = useRef(false);
+  const statusRef = useRef(status);
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   useEffect(() => {
     historyRef.current = history;
@@ -172,6 +184,50 @@ export function StepsProvider({ children }: { children: ReactNode }) {
     setStatus('loading');
     await refresh();
   }, [refresh]);
+
+  const runStepsSetupAction = useCallback(async () => {
+    if (Platform.OS === 'android') {
+      if (status === 'provider_install') {
+        awaitingHealthConnectReturnRef.current = true;
+        await openHealthConnectInstallOnce();
+        resetHealthConnectInitCache();
+        setRequestStepPermissionOnNextSync(true);
+        setStatus('loading');
+        await liveSyncRef.current?.();
+        return;
+      }
+      if (status === 'provider_update') {
+        awaitingHealthConnectReturnRef.current = true;
+        await openHealthConnectInPlayStore();
+        resetHealthConnectInitCache();
+        setRequestStepPermissionOnNextSync(true);
+        setStatus('loading');
+        return;
+      }
+    }
+    await retryTracking();
+  }, [retryTracking, status]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') {
+      return;
+    }
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next !== 'active') {
+        return;
+      }
+      if (awaitingHealthConnectReturnRef.current) {
+        logAndroidHealthDebug('Resume_From_PlayStore');
+        awaitingHealthConnectReturnRef.current = false;
+        setRequestStepPermissionOnNextSync(true);
+      } else if (statusRef.current === 'denied' || statusRef.current === 'pending') {
+        logAndroidHealthDebug('Resume_From_Settings');
+      }
+      resetHealthConnectInitCache();
+      void liveSyncRef.current?.();
+    });
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     if (!LIVE_TRACKING_PLATFORMS.has(Platform.OS)) {
@@ -283,8 +339,9 @@ export function StepsProvider({ children }: { children: ReactNode }) {
       status,
       refresh,
       retryTracking,
+      runStepsSetupAction,
     }),
-    [snapshot, todaySteps, hourlySlots, goal, status, refresh, retryTracking],
+    [snapshot, todaySteps, hourlySlots, goal, status, refresh, retryTracking, runStepsSetupAction],
   );
 
   return <StepsContext.Provider value={value}>{children}</StepsContext.Provider>;

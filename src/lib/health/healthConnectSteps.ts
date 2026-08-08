@@ -9,16 +9,54 @@ import {
 } from 'react-native-health-connect';
 
 import { HOURLY_STEP_SLOTS } from '@/constants/hourlySteps';
+import { ensureActivityRecognitionPermission } from '@/lib/health/androidActivityRecognitionPermission';
+import { logAndroidHealthDebug } from '@/lib/health/androidHealthDebugLog';
 import { localDayRange } from '@/lib/health/readTodaySteps';
 import type { ReadHourlyStepsResult } from '@/lib/health/readHourlyStepsToday';
 import type { StepsReadFailure, StepsReadResult } from '@/lib/health/readTodaySteps';
 
 const STEPS_READ_PERMISSION = { accessType: 'read' as const, recordType: 'Steps' as const };
 
-let initPromise: Promise<'ready' | StepsReadFailure> | null = null;
+type InitResult = 'ready' | StepsReadFailure;
+
+let initPromise: Promise<InitResult> | null = null;
 
 function isAndroid(): boolean {
   return Platform.OS === 'android';
+}
+
+function mapSdkStatus(status: number): StepsReadFailure | null {
+  if (status === SdkAvailabilityStatus.SDK_AVAILABLE) {
+    return null;
+  }
+  if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+    return 'provider_update';
+  }
+  if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE) {
+    return 'provider_install';
+  }
+  return 'unavailable';
+}
+
+function hasStepsReadPermission(
+  granted: readonly { recordType?: string; accessType?: string }[],
+): boolean {
+  return granted.some((p) => p.recordType === 'Steps' && p.accessType === 'read');
+}
+
+function logSdkStatus(status: number): void {
+  if (status === SdkAvailabilityStatus.SDK_AVAILABLE) {
+    logAndroidHealthDebug('HealthConnect_Available');
+    return;
+  }
+  if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+    logAndroidHealthDebug('HealthConnect_UpdateRequired');
+    return;
+  }
+  if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE) {
+    logAndroidHealthDebug('HealthConnect_NotInstalled');
+    return;
+  }
 }
 
 async function ensureHealthConnectReady(
@@ -37,22 +75,31 @@ async function ensureHealthConnectReady(
   }
 
   if (!initPromise) {
-    initPromise = (async (): Promise<'ready' | StepsReadFailure> => {
-      const status = await getSdkStatus();
-      if (status !== SdkAvailabilityStatus.SDK_AVAILABLE) {
-        return 'unavailable';
+    initPromise = (async (): Promise<InitResult> => {
+      const sdkStatus = await getSdkStatus();
+      logSdkStatus(sdkStatus);
+      const sdkIssue = mapSdkStatus(sdkStatus);
+      if (sdkIssue) {
+        return sdkIssue;
+      }
+
+      if (shouldRequestPermission) {
+        const activity = await ensureActivityRecognitionPermission(true);
+        if (activity === 'denied') {
+          return 'denied';
+        }
       }
 
       const initialized = await initialize();
       if (!initialized) {
-        return 'unavailable';
+        const afterInit = mapSdkStatus(await getSdkStatus());
+        return afterInit ?? 'unavailable';
       }
 
       const granted = await getGrantedPermissions();
-      const hasSteps = granted.some(
-        (p) => 'recordType' in p && p.recordType === 'Steps' && p.accessType === 'read',
-      );
-      if (hasSteps) {
+      if (hasStepsReadPermission(granted)) {
+        logAndroidHealthDebug('ReadSteps_Granted');
+        logAndroidHealthDebug('Provider_Ready');
         return 'ready';
       }
 
@@ -60,10 +107,15 @@ async function ensureHealthConnectReady(
         return 'pending';
       }
 
+      logAndroidHealthDebug('ReadSteps_Request');
       const requested = await requestPermission([STEPS_READ_PERMISSION]);
-      const allowed = requested.some(
-        (p) => 'recordType' in p && p.recordType === 'Steps' && p.accessType === 'read',
-      );
+      const allowed = hasStepsReadPermission(requested);
+      if (allowed) {
+        logAndroidHealthDebug('ReadSteps_Granted');
+        logAndroidHealthDebug('Provider_Ready');
+      } else {
+        logAndroidHealthDebug('ReadSteps_Denied');
+      }
       return allowed ? 'ready' : 'denied';
     })().then((result) => {
       if (result !== 'ready') {
@@ -80,7 +132,7 @@ async function ensureHealthConnectReady(
   return { ok: false, reason: result };
 }
 
-/** Reset cached init (tests / permission revoke flows). */
+/** Reset cached init (tests / permission revoke / return from Play Store). */
 export function resetHealthConnectInitCache(): void {
   initPromise = null;
 }
@@ -114,8 +166,10 @@ export async function readTodayStepsFromHealthConnect(
   try {
     const { start, end } = localDayRange(now);
     const steps = await aggregateStepsBetween(start, end);
+    logAndroidHealthDebug('Aggregate_Success');
     return { ok: true, steps };
   } catch {
+    logAndroidHealthDebug('Aggregate_Failed');
     return { ok: false, reason: 'error' };
   }
 }
@@ -125,9 +179,7 @@ export async function readHourlyStepsTodayFromHealthConnect(
 ): Promise<ReadHourlyStepsResult> {
   const ready = await ensureHealthConnectReady();
   if (!ready.ok) {
-    const reason =
-      ready.reason === 'denied' || ready.reason === 'pending' ? 'unavailable' : ready.reason;
-    return { ok: false, reason };
+    return { ok: false, reason: 'unavailable' as const };
   }
 
   const { start: dayStart } = localDayRange(now);
@@ -151,4 +203,10 @@ export async function readHourlyStepsTodayFromHealthConnect(
   } catch {
     return { ok: false, reason: 'error' };
   }
+}
+
+/** Probe SDK without permission prompts (dashboard gating). */
+export async function probeHealthConnectTrackingState(): Promise<StepsReadFailure | 'ready'> {
+  const ready = await ensureHealthConnectReady({ requestPermission: false });
+  return ready.ok ? 'ready' : ready.reason;
 }

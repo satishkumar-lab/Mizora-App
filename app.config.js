@@ -33,6 +33,10 @@ module.exports = {
             compileSdkVersion: 36,
             targetSdkVersion: 36,
             minSdkVersion: 26,
+            enableMinifyInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
+            // Phone ABIs only — drops x86/x86_64 emulator libs from installable APKs (~30–40% native savings).
+            buildArchs: ['arm64-v8a', 'armeabi-v7a'],
           },
         },
       ],

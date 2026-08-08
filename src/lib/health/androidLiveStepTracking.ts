@@ -7,7 +7,9 @@ import {
   readHourlyStepsTodayFromHealthConnect,
   readTodayStepsFromHealthConnect,
 } from '@/lib/health/healthConnectSteps';
+import { logAndroidHealthDebug } from '@/lib/health/androidHealthDebugLog';
 import { consumeRequestStepPermissionOnNextSync } from '@/lib/health/stepPermissionRequestGate';
+import { consumeAndroidAutoRequestStepPermission } from '@/lib/health/androidStepPermissionAutoRequest';
 import {
   applyLiveDeltaToCurrentHour,
   emptyHourlyBuckets,
@@ -208,7 +210,8 @@ export function startAndroidLiveStepTracking(options: AndroidLiveStepTrackingOpt
     changesToken = undefined;
 
     const now = new Date();
-    const requestPermission = consumeRequestStepPermissionOnNextSync();
+    const requestPermission =
+      consumeRequestStepPermissionOnNextSync() || (await consumeAndroidAutoRequestStepPermission());
     const read = await readTodayStepsFromHealthConnect(now, { requestPermission });
     if (stopped || generation !== syncGeneration) {
       return false;
@@ -341,13 +344,21 @@ export function startAndroidLiveStepTracking(options: AndroidLiveStepTrackingOpt
       return;
     }
     stopChangesWatcher();
-    const ok = await establishBaseline();
-    if (stopped) {
-      return;
-    }
-    if (ok) {
-      startChangesWatcherIfForeground();
-      scheduleMidnightResync();
+    logAndroidHealthDebug('Sync_Started');
+    try {
+      const ok = await establishBaseline();
+      if (stopped) {
+        return;
+      }
+      if (ok) {
+        logAndroidHealthDebug('Sync_Completed');
+        startChangesWatcherIfForeground();
+        scheduleMidnightResync();
+      } else {
+        logAndroidHealthDebug('Sync_Error', 'baseline_not_ready');
+      }
+    } catch {
+      logAndroidHealthDebug('Sync_Error', 'exception');
     }
   }
 

@@ -161,7 +161,7 @@ export function StepsDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useMizoraTheme();
-  const { snapshot, refresh: refreshSteps, goal, status, retryTracking } = useSteps();
+  const { snapshot, refresh: refreshSteps, goal, status, runStepsSetupAction } = useSteps();
   const { steps, distanceKm, activeMinutes, vsYesterday, hourlySlots } = snapshot;
   const metricsLive = isStepsTrackingReady(status);
 
@@ -203,7 +203,10 @@ export function StepsDetailScreen() {
               progressPct={progressPct}
             />
           ) : (
-            <StepsPermissionStateCard status={status} onPrimaryPress={() => void retryTracking()} />
+            <StepsPermissionStateCard
+              status={status}
+              onPrimaryPress={() => void runStepsSetupAction()}
+            />
           )}
 
           {metricsLive ? (

@@ -1,4 +1,4 @@
-import { ActivityIndicator, Platform, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { Card } from '@/components/ui/Card';
@@ -84,19 +84,6 @@ export function StepsPermissionStateCard({
           </Pressable>
         ) : null}
       </View>
-
-      {Platform.OS === 'android' && status === 'unavailable' ? (
-        <Text
-          style={{
-            fontFamily: fonts.regular,
-            fontSize: 10,
-            color: colors.textMuted,
-            lineHeight: 14,
-          }}
-        >
-          Health Connect is required for step sync on Android.
-        </Text>
-      ) : null}
     </Card>
   );
 }

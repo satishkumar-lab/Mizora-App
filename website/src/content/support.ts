@@ -16,8 +16,12 @@ export const supportPage = {
   faqFooter: 'Tap a question to read the answer.',
   faq: [
     {
+      q: 'What is Health Connect on Android?',
+      a: 'Health Connect is a free Android feature that lets Mizora read steps already recorded on your phone. Your steps stay on your device; Mizora uses them for your dashboard and streaks. If steps look wrong, open the Health Connect app and check which apps are allowed to share steps, then return to Mizora and tap Try again on the Steps screen.',
+    },
+    {
       q: 'Steps not updating?',
-      a: 'Allow Motion (iPhone) or Health Connect (Android) for Mizora in your phone settings, then open the Steps tab and tap Try again. On Android, install or update Health Connect if prompted.',
+      a: 'On iPhone, allow Motion & Fitness for Mizora. On Android, allow step access when Mizora asks, and make sure your fitness apps sync steps into Health Connect. Open Steps and tap Try again—or use Profile → Help if you dismissed setup.',
     },
     {
       q: 'How do I change daily goals?',

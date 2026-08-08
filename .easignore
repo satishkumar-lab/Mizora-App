@@ -1,0 +1,6 @@
+website/
+docs/
+**/*.md
+.git/
+.cursor/
+agent-transcripts/

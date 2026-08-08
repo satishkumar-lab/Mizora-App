@@ -9,7 +9,10 @@ import { StepsPermissionStateCard } from '@/components/steps/StepsPermissionStat
 import { Card } from '@/components/ui/Card';
 import { MetricBadgeIcon } from '@/components/icons/MetricBadgeIcon';
 import { StepsCardMenuIcon } from '@/components/icons/StepsCardMenuIcon';
-import { isStepsTrackingReady } from '@/lib/health/stepsTrackingUi';
+import {
+  isStepsTrackingReady,
+  shouldShowHomeStepsPermissionCard,
+} from '@/lib/health/stepsTrackingUi';
 import { useSteps } from '@/providers/StepsProvider';
 import { useMizoraTheme } from '@/hooks/useMizoraTheme';
 import { useHomeDashboardPreferences } from '@/providers/HomeDashboardPreferencesProvider';
@@ -21,7 +24,14 @@ type StepsProgressCardProps = {
 
 export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
   const router = useRouter();
-  const { snapshot, refresh: refreshSteps, hourlySlots, goal, status, retryTracking } = useSteps();
+  const {
+    snapshot,
+    refresh: refreshSteps,
+    hourlySlots,
+    goal,
+    status,
+    runStepsSetupAction,
+  } = useSteps();
   const { steps } = snapshot;
   const metricsLive = isStepsTrackingReady(status);
   const { prefs, setStepsChartStyle, setHealthOverviewLayout } = useHomeDashboardPreferences();
@@ -82,7 +92,7 @@ export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
           </View>
         </View>
 
-        {metricsLive ? (
+        {metricsLive || !shouldShowHomeStepsPermissionCard(status) ? (
           <>
             <Pressable accessibilityRole="button" onPress={openDetail}>
               <StepsArcRing steps={steps} goal={goal} size={compact ? 'card' : 'cardSpacious'} />
@@ -97,7 +107,7 @@ export function StepsProgressCard({ compact = false }: StepsProgressCardProps) {
           <StepsPermissionStateCard
             compact={compact}
             status={status}
-            onPrimaryPress={() => void retryTracking()}
+            onPrimaryPress={() => void runStepsSetupAction()}
           />
         )}
       </Card>

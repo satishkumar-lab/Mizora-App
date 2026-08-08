@@ -44,11 +44,11 @@ export function StreakCalendarScreen() {
   const insets = useSafeAreaInsets();
   const goBack = useMizoraBack('/home');
   const { isDark } = useMizoraTheme();
-  const { metricsLive, status, retryTracking } = useStepsMetricsLive();
+  const { metricsLive, status, runStepsSetupAction } = useStepsMetricsLive();
   const { todaySteps: liveTodaySteps, goal } = useSteps();
 
   const onRetry = () => {
-    void retryTracking();
+    void runStepsSetupAction();
   };
 
   const todayKey = localTodayDateKey();

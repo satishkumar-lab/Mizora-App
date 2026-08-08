@@ -146,7 +146,7 @@ export function WeeklyHealthReportScreen() {
   const insets = useSafeAreaInsets();
   const goBack = useMizoraBack('/notifications');
   const { isDark } = useMizoraTheme();
-  const { metricsLive, status, retryTracking } = useStepsMetricsLive();
+  const { metricsLive, status, runStepsSetupAction } = useStepsMetricsLive();
   const { snapshot, hourlySlots, refresh } = useSteps();
   const { totalWeekMl, reloadFromStorage } = useWaterIntake();
   const peak = useWeeklyPeakWalk({
@@ -191,7 +191,10 @@ export function WeeklyHealthReportScreen() {
         showsVerticalScrollIndicator={false}
       >
         {!metricsLive ? (
-          <StepsPermissionStateCard status={status} onPrimaryPress={() => void retryTracking()} />
+          <StepsPermissionStateCard
+            status={status}
+            onPrimaryPress={() => void runStepsSetupAction()}
+          />
         ) : null}
 
         <WeeklyTotalsHero

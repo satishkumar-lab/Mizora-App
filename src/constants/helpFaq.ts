@@ -1,7 +1,10 @@
+import { HELP_FAQ_ANDROID_HEALTH_CONNECT } from '@/constants/androidHealthConnectGuidance';
+
 export const HELP_FAQ = [
+  HELP_FAQ_ANDROID_HEALTH_CONNECT,
   {
     q: 'Steps not updating?',
-    a: 'Allow Motion (iPhone) or Health Connect (Android) for Mizora in your phone settings, then open the Steps tab and tap Try again. On Android, install or update Health Connect if prompted.',
+    a: 'On iPhone, allow Motion & Fitness for Mizora. On Android, allow step access when Mizora asks, and make sure your fitness apps sync steps into Health Connect. Open Steps and tap Try again—or use Profile → Help if you dismissed setup.',
   },
   {
     q: 'How do I change daily goals?',

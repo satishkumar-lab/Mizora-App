@@ -22,7 +22,7 @@ export function AchievementsScreen() {
   const goBack = useMizoraBack('/streak');
   const { colors, isDark } = useMizoraTheme();
   const { goal } = useSteps();
-  const { metricsLive, status, retryTracking } = useStepsMetricsLive();
+  const { metricsLive, status, runStepsSetupAction } = useStepsMetricsLive();
   const meta = useMemo(() => monthlyAchievementsMeta(), []);
   const achievements = useMemo(
     () => (metricsLive ? resolveMonthlyAchievements(undefined, goal) : []),
@@ -49,7 +49,7 @@ export function AchievementsScreen() {
             {!metricsLive ? (
               <StepsPermissionStateCard
                 status={status}
-                onPrimaryPress={() => void retryTracking()}
+                onPrimaryPress={() => void runStepsSetupAction()}
               />
             ) : null}
 

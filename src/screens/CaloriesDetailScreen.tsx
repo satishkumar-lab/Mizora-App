@@ -37,7 +37,7 @@ export function CaloriesDetailScreen() {
   const { colors, isDark } = useMizoraTheme();
   const goBack = useMizoraBack('/home');
   const { goals, refresh: refreshGoals } = useHealthGoals();
-  const { metricsLive, status, retryTracking } = useStepsMetricsLive();
+  const { metricsLive, status, runStepsSetupAction } = useStepsMetricsLive();
   const { snapshot, todaySteps, refresh: refreshSteps, goal: stepGoal } = useSteps();
 
   const activeKcal = useMemo(
@@ -82,7 +82,10 @@ export function CaloriesDetailScreen() {
       >
         <View className="gap-6">
           {!metricsLive ? (
-            <StepsPermissionStateCard status={status} onPrimaryPress={() => void retryTracking()} />
+            <StepsPermissionStateCard
+              status={status}
+              onPrimaryPress={() => void runStepsSetupAction()}
+            />
           ) : (
             <>
               <CaloriesDetailHeroCard
