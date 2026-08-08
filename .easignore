@@ -4,3 +4,7 @@ docs/
 .git/
 .cursor/
 agent-transcripts/
+
+# Regenerate on EAS via expo prebuild (applies expo-build-properties compileSdk 36).
+/android
+/ios
