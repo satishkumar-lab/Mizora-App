@@ -96,7 +96,7 @@ export const privacyPage: LegalPageContent = {
         'Update or clear profile and health fields in Profile.',
         'Control saved notification preferences under Profile → Notifications (delivery may arrive in a future app update).',
         'Read Privacy & data in the app for a plain-language summary of what Mizora stores.',
-        `Email us at ${SITE.supportEmail} for access, correction, or deletion questions.`,
+        `Contact us at ${SITE.supportUrl} for access, correction, or deletion questions.`,
       ],
     },
     {
@@ -107,7 +107,7 @@ export const privacyPage: LegalPageContent = {
     },
     {
       heading: 'Contact',
-      paragraphs: [`Questions about privacy: ${SITE.supportEmail}`],
+      paragraphs: [`Questions about privacy: ${SITE.supportUrl}`],
     },
   ]),
 };
@@ -169,7 +169,7 @@ export const termsPage: LegalPageContent = {
     },
     {
       heading: 'Contact',
-      paragraphs: [`Legal or Terms questions: ${SITE.supportEmail}`],
+      paragraphs: [`Legal or Terms questions: ${SITE.supportUrl}`],
     },
   ]),
 };

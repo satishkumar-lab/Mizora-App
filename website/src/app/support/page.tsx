@@ -106,7 +106,7 @@ export default function SupportPage() {
               >
                 {link.label}
                 <span className="text-mizora-ink-secondary mt-1 block text-[13px] font-medium">
-                  Read on mizora.app →
+                  Read on website →
                 </span>
               </Link>
             ))}

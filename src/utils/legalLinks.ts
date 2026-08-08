@@ -15,9 +15,7 @@ export function legalDocumentHref(kind: 'privacy' | 'terms'): Href {
 }
 
 export async function openSupportEmail(): Promise<void> {
-  const subject = encodeURIComponent('Mizora support');
-  const mailto = `mailto:${LEGAL.supportEmail}?subject=${subject}`;
-  await Linking.openURL(mailto);
+  await openLegalUrl(LEGAL.supportUrl);
 }
 
 export function openSystemSettings(): void {

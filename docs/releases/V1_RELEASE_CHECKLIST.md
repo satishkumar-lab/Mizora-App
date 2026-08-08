@@ -78,8 +78,8 @@ Manual QA on **physical devices** (simulators/emulators are supplementary). Sign
 | ☐      | **Age rating**                     | Complete questionnaire (health/fitness, no unrestricted web).                         |
 | ☐      | **Export compliance**              | Standard encryption questionnaire (Expo default).                                     |
 | ☐      | **Review notes**                   | Test account / steps permission steps for reviewer.                                   |
-| ☐      | **Privacy Policy URL**             | Store field: `https://mizora.app/privacy` — must be **live** and match in-app policy. |
-| ☐      | **Support URL / contact**          | `support@mizora.app` (and support URL if required).                                   |
+| ☑      | **Privacy Policy URL**             | `https://website-chi-red-98.vercel.app/privacy` — must match in-app policy.           |
+| ☑      | **Support URL / contact**          | `https://website-chi-red-98.vercel.app/support`                                       |
 
 ### 2.2 Google Play
 
@@ -95,13 +95,13 @@ Manual QA on **physical devices** (simulators/emulators are supplementary). Sign
 
 ### 2.3 Privacy Policy & Terms of Service
 
-| Status | Item                                 | Notes                                                                                                                |
-| ------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| ☑      | **In-app Privacy Policy**            | `src/constants/legalDocuments.ts` + `/privacy` route.                                                                |
-| ☑      | **In-app Terms of Service**          | `src/constants/legalDocuments.ts` + `/terms` route.                                                                  |
-| ☑      | **Last updated date**                | August 8, 2026 in legal documents.                                                                                   |
-| ◐      | **Public web URLs**                  | `src/constants/legal.ts` → `https://mizora.app/privacy` and `/terms` — **host static export** and verify in browser. |
-| ☐      | **Store listing ↔ in-app alignment** | No claims for push, app lock, or cloud sync that V1 does not provide.                                                |
+| Status | Item                                 | Notes                                                                                                        |
+| ------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| ☑      | **In-app Privacy Policy**            | `src/constants/legalDocuments.ts` + `/privacy` route.                                                        |
+| ☑      | **In-app Terms of Service**          | `src/constants/legalDocuments.ts` + `/terms` route.                                                          |
+| ☑      | **Last updated date**                | August 8, 2026 in legal documents.                                                                           |
+| ☑      | **Public web URLs**                  | `src/constants/legal.ts` → `https://website-chi-red-98.vercel.app/privacy` and `/terms` — verify in browser. |
+| ☐      | **Store listing ↔ in-app alignment** | No claims for push, app lock, or cloud sync that V1 does not provide.                                        |
 
 ### 2.4 Permissions (declarations vs product)
 
@@ -206,22 +206,22 @@ These are **intentional** for 1.0. Do not treat as release blockers unless store
 
 Complete immediately before submitting for **App Store review** and **Play production**.
 
-| Status | Gate                                                                                          | Owner sign-off |
-| ------ | --------------------------------------------------------------------------------------------- | -------------- |
-| ☐      | All **§1.2 iOS** critical paths passed on physical iPhone                                     |                |
-| ☐      | All **§1.3 Android** critical paths passed on physical Android                                |                |
-| ☐      | **Weekly report** verified with real multi-day water + steps (incl. week rollover spot-check) |                |
-| ☐      | **Hosted Privacy Policy & Terms** live at declared URLs                                       |                |
-| ☐      | **App Store Connect** listing, privacy, age rating complete                                   |                |
-| ☐      | **Play Console** listing, data safety, content rating complete                                |                |
-| ☐      | **Screenshots & descriptions** reviewed for V1 accuracy                                       |                |
-| ☐      | **Production EAS builds** built, smoke-tested, version correct                                |                |
-| ☐      | **TestFlight** (or internal iOS) sign-off                                                     |                |
-| ☐      | **Play Internal Testing** sign-off                                                            |                |
-| ☐      | **No open P0/P1** bugs in Health module without approved hotfix                               |                |
-| ☐      | **Release notes** (1.0.0) prepared for both stores                                            |                |
-| ☐      | **Support channel** (`support@mizora.app`) monitored for launch window                        |                |
-| ☐      | **Rollback plan** documented (previous build ID / staged rollout pause on Play)               |                |
+| Status | Gate                                                                                              | Owner sign-off |
+| ------ | ------------------------------------------------------------------------------------------------- | -------------- |
+| ☐      | All **§1.2 iOS** critical paths passed on physical iPhone                                         |                |
+| ☐      | All **§1.3 Android** critical paths passed on physical Android                                    |                |
+| ☐      | **Weekly report** verified with real multi-day water + steps (incl. week rollover spot-check)     |                |
+| ☐      | **Hosted Privacy Policy & Terms** live at declared URLs                                           |                |
+| ☐      | **App Store Connect** listing, privacy, age rating complete                                       |                |
+| ☐      | **Play Console** listing, data safety, content rating complete                                    |                |
+| ☐      | **Screenshots & descriptions** reviewed for V1 accuracy                                           |                |
+| ☐      | **Production EAS builds** built, smoke-tested, version correct                                    |                |
+| ☐      | **TestFlight** (or internal iOS) sign-off                                                         |                |
+| ☐      | **Play Internal Testing** sign-off                                                                |                |
+| ☐      | **No open P0/P1** bugs in Health module without approved hotfix                                   |                |
+| ☐      | **Release notes** (1.0.0) prepared for both stores                                                |                |
+| ☐      | **Support channel** (`https://website-chi-red-98.vercel.app/support`) monitored for launch window |                |
+| ☐      | **Rollback plan** documented (previous build ID / staged rollout pause on Play)                   |                |
 
 ---
 

@@ -1,3 +1,5 @@
+import { LEGAL } from '@/constants/legal';
+
 export type LegalSection = {
   heading: string;
   paragraphs: string[];
@@ -69,7 +71,7 @@ export const PRIVACY_POLICY: LegalDocument = {
         'Update or clear profile and health fields in Profile.',
         'Control saved notification preferences under Profile → Notifications (delivery may arrive in a future app update).',
         'Read Privacy & data in the app for a plain-language summary of what Mizora stores.',
-        'Email us at support@mizora.app for access, correction, or deletion questions.',
+        `Contact us at ${LEGAL.supportUrl} for access, correction, or deletion questions.`,
       ],
     },
     {
@@ -80,7 +82,7 @@ export const PRIVACY_POLICY: LegalDocument = {
     },
     {
       heading: 'Contact',
-      paragraphs: ['Questions about privacy: support@mizora.app'],
+      paragraphs: [`Questions about privacy: ${LEGAL.supportUrl}`],
     },
   ],
 };
@@ -140,7 +142,7 @@ export const TERMS_OF_SERVICE: LegalDocument = {
     },
     {
       heading: 'Contact',
-      paragraphs: ['Legal or Terms questions: support@mizora.app'],
+      paragraphs: [`Legal or Terms questions: ${LEGAL.supportUrl}`],
     },
   ],
 };
